@@ -1,0 +1,5 @@
+# 原始与处理后数据默认不入库，仅保留目录
+raw/*
+!raw/.gitkeep
+processed/*
+!processed/.gitkeep
