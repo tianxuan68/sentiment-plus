@@ -1,6 +1,6 @@
 # Sentiment-Plus 后端
 
-JeecgBoot 精简版 FastAPI：系统配置 API + 评论情感分析。
+JeecgBoot 精简版 FastAPI：仅系统配置 API（用户 / 角色 / 菜单 / 部门 / 字典 / 登录鉴权）。
 
 ```powershell
 copy .env.example .env

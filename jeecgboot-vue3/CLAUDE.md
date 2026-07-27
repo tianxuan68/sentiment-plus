@@ -155,10 +155,8 @@ jeecgboot-vue3/
 │   ├── store/              # Pinia stores
 │   ├── utils/              # HTTP, auth, helpers, dynamicPages
 │   └── views/
-│       ├── dashboard/      # Home dashboards
-│       ├── monitor/        # System monitoring
 │       ├── sys/            # Framework pages (login shell, errors, iframe)
-│       └── system/         # Admin CRUD (user, role, menu, dict, …)
+│       └── system/         # Admin CRUD (user, role, menu, depart, dict, usersetting, loginmini)
 ├── tests/                  # Jest tests + optional mock server
 └── types/                  # Global TypeScript declarations
 ```

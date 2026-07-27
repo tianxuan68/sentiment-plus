@@ -11,7 +11,7 @@ from app.utils.common import new_id
 from app.services.phone_captcha_service import get_phone_captcha, pop_phone_captcha, validate_phone_captcha
 
 DEFAULT_REGISTER_ROLE_ID = "f6817f48af4fb3af11b9e8bf182f618b"
-SENTIMENT_HOME_PATH = "/sentiment/dashboard"
+DEFAULT_HOME_PATH = "/system/user"
 
 
 _user_roles_cache: TTLCache[str, List[SysRole]] = TTLCache(
@@ -28,7 +28,7 @@ def invalidate_user_roles_cache(user_id: Optional[str] = None) -> None:
 
 
 def resolve_home_path(roles: Optional[List[SysRole]]) -> str:
-    return SENTIMENT_HOME_PATH
+    return DEFAULT_HOME_PATH
 
 
 def user_to_dict(user: SysUser, roles: Optional[List[SysRole]] = None) -> Dict[str, Any]:

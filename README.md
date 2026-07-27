@@ -1,6 +1,6 @@
-# Sentiment-Plus
+# Sentiment-Plus（系统配置精简版）
 
-商品评论情感分析系统：基于 Jeecg FastAPI + Vue3，提供情感分类、关键词提取与属性级情感分析。
+基于 Jeecg FastAPI + Vue3 的后台管理系统壳，仅保留系统配置相关能力：用户、角色、菜单、部门、数据字典与登录鉴权。
 
 ## 目录结构
 
@@ -8,7 +8,6 @@
 |------|------|
 | `jeecg-fastapi/` | 后端（FastAPI） |
 | `jeecgboot-vue3/` | 前端（Vue3 + Ant Design Vue） |
-| `docs/` | 项目设计文档 |
 
 ## 快速开始
 
@@ -36,16 +35,14 @@ pnpm dev
 
 开发服务器默认：`http://localhost:3100`（代理到后端 `8000`）。
 
-## 业务入口
+## 功能入口
 
-登录后默认进入情感分析看板：`/sentiment/dashboard`。
+登录后默认进入用户管理：`/system/user`。
 
-主要接口（需登录）：
+系统管理菜单：
 
-- `GET  /sys/sentimentAnalysis/overview`
-- `POST /sys/sentimentAnalysis/predict`
-- `POST /sys/sentimentAnalysis/predictBatch`
-- `POST /sys/sentimentAnalysis/keywords`
-- `POST /sys/sentimentAnalysis/aspects`
-
-当前分析引擎为词典基线（baseline）；深度学习模型接口已预留，可按 `docs/项目设计.md` 迭代接入。
+- 用户管理 `/system/user`
+- 角色管理 `/system/role`
+- 菜单管理 `/system/menu`
+- 部门管理 `/system/depart`
+- 数据字典 `/system/dict`

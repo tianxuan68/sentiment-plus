@@ -29,7 +29,7 @@
   import { queryDepartPostByOrgCode } from '../depart.api';
   import { ColEx } from '/@/components/Form/src/types';
   import { userColumns } from '@/views/system/depart/depart.data';
-  import { linkDepartUserBatch } from '@/views/system/departUser/depart.user.api';
+  import { linkDepartUserBatch } from '../depart.api';
 
   const prefixCls = inject('prefixCls');
   const props = defineProps({

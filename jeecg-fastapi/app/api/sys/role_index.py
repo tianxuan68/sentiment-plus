@@ -12,8 +12,8 @@ from app.schemas.response import Result
 router = APIRouter(prefix="/sysRoleIndex", tags=["角色首页"])
 
 _DEFAULT_INDEX = {
-    "url": "/sentiment/dashboard",
-    "component": "sentiment/dashboard/index",
+    "url": "/system/user",
+    "component": "system/user/index",
 }
 
 

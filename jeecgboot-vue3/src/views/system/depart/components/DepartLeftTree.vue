@@ -113,8 +113,7 @@
   import { useModal } from '/@/components/Modal';
   import { useMessage } from '/@/hooks/web/useMessage';
   import { useMethods } from '/@/hooks/system/useMethods';
-  import { Api, deleteBatchDepart, queryDepartAndPostTreeSync, updateChangeDepart } from '../depart.api';
-  import { searchByKeywords } from '/@/views/system/departUser/depart.user.api';
+  import { Api, deleteBatchDepart, queryDepartAndPostTreeSync, searchByKeywords, updateChangeDepart } from '../depart.api';
   import DepartFormModal from '/@/views/system/depart/components/DepartFormModal.vue';
   import { Modal, Popconfirm } from 'ant-design-vue';
   import TreeIcon from "@/components/Form/src/jeecg/components/TreeIcon/TreeIcon.vue";

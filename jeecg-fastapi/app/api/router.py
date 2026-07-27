@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-from app.api.sentiment.analysis import router as sentiment_analysis_router
 from app.api.sys.announcement import router as announcement_router
 from app.api.sys.common import router as common_router
 from app.api.sys.dashboard import router as dashboard_router
@@ -32,4 +31,3 @@ sys_router.include_router(third_login_router)
 sys_router.include_router(third_user_router)
 sys_router.include_router(sms_router)
 sys_router.include_router(log_router)
-sys_router.include_router(sentiment_analysis_router)

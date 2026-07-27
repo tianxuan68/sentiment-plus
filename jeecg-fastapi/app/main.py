@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Sentiment-Plus",
-    description="商品评论情感分析（Jeecg FastAPI 精简壳 + 情感分析业务）",
+    description="Jeecg FastAPI 精简壳：仅系统配置（用户/角色/菜单/部门/字典）",
     version="0.1.0",
 )
 

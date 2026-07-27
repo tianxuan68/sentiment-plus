@@ -54,9 +54,13 @@
   import { Avatar } from 'ant-design-vue';
   import { BasicModal } from '/@/components/Modal';
   import { getUserDeparts, selectDepart } from '/@/views/system/depart/depart.api';
-  import { getUserTenants } from '/@/views/system/tenant/tenant.api';
   import { useMessage } from '/@/hooks/web/useMessage';
   import { useUserStore } from '/@/store/modules/user';
+
+  /** 精简版不启用租户，始终返回空列表 */
+  async function getUserTenants() {
+    return { list: [] as any[] };
+  }
 
   const userStore = useUserStore();
   const { createMessage, notification } = useMessage();

@@ -36,6 +36,8 @@ export enum Api {
   updateChangeDepart = '/sys/sysDepart/updateChangeDepart',
   //获取负责部门
   getDepartmentHead = '/sys/sysDepart/getDepartmentHead',
+  searchBy = '/sys/sysDepart/searchBy',
+  linkDepartUser = '/sys/user/editSysDepartWithUser',
 }
 
 /**
@@ -169,3 +171,14 @@ export const updateChangeDepart = (params) => defHttp.put({ url: Api.updateChang
  * @param params
  */
 export const getDepartmentHead = (params) => defHttp.get({ url: Api.getDepartmentHead, params });
+
+/**
+ * 根据关键字搜索部门
+ */
+export const searchByKeywords = (params) => defHttp.get({ url: Api.searchBy, params });
+
+/**
+ * 批量添加部门和用户的关联关系
+ */
+export const linkDepartUserBatch = (departId: string, userIdList: string[]) =>
+  defHttp.post({ url: Api.linkDepartUser, params: { depId: departId, userIdList } });

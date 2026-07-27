@@ -1,8 +1,7 @@
 -- =============================================================================
 -- Sentiment-Plus / JeecgBoot FastAPI 全量数据库初始化（唯一入口）
 -- =============================================================================
--- 包含：登录权限、字典、短信缓存、第三方登录、系统配置（用户/角色/菜单/部门/字典/登录）
---       + 评论情感分析菜单
+-- 包含：登录权限、字典、短信缓存、第三方登录、系统配置（用户/角色/菜单/部门/字典）
 --
 -- 用法:
 --   mysql -u root -p < sql/jeecgboot-slim.sql
@@ -230,24 +229,20 @@ INSERT INTO `sys_user_role` (`id`,`user_id`,`role_id`) VALUES
 ('1996175712356261890','e9ca23d68d884d4ebb19d07889727dae','f6817f48af4fb3af11b9e8bf182f618b');
 
 INSERT INTO `sys_depart` (`id`,`parent_id`,`depart_name`,`depart_order`,`org_category`,`org_type`,`org_code`,`del_flag`,`create_time`) VALUES
-('c6d7cb4deeac411cb3384b1b31278596','','Sentiment-Plus',0,'1','1','A01','0','2019-02-11 14:21:51'),
+('c6d7cb4deeac411cb3384b1b31278596','','系统根组织',0,'1','1','A01','0','2019-02-11 14:21:51'),
 ('4f1765520d6346f9bd9c79e2479e5b12','c6d7cb4deeac411cb3384b1b31278596','研发部',1,'2','2','A01A03','0','2019-02-20 17:15:34');
 
 INSERT INTO `sys_user_depart` (`ID`,`user_id`,`dep_id`) VALUES
 ('1996175712356261891','e9ca23d68d884d4ebb19d07889727dae','4f1765520d6346f9bd9c79e2479e5b12');
 
--- 菜单（系统管理 + 评论情感分析）
+-- 菜单（仅系统管理）
 INSERT INTO `sys_permission` (`id`,`parent_id`,`name`,`url`,`component`,`is_route`,`redirect`,`menu_type`,`sort_no`,`icon`,`is_leaf`,`keep_alive`,`hidden`,`del_flag`,`status`) VALUES
-('d7d6e2e4e2934f2c9385a623fd98c6f3','','系统管理','/isystem','layouts/RouteView',1,NULL,0,4.00,'ant-design:setting',0,0,0,0,'1'),
+('d7d6e2e4e2934f2c9385a623fd98c6f3','','系统管理','/isystem','layouts/RouteView',1,'/system/user',0,1.00,'ant-design:setting',0,0,0,0,'1'),
 ('3f915b2769fc80648e92d04e84ca059d','d7d6e2e4e2934f2c9385a623fd98c6f3','用户管理','/system/user','system/user/index',1,NULL,1,1.00,'ant-design:user',0,1,0,0,'1'),
 ('190c2b43bec6a5f7a4194a85db67d96a','d7d6e2e4e2934f2c9385a623fd98c6f3','角色管理','/system/role','system/role/index',1,NULL,1,2.00,'ant-design:solution',0,1,0,0,'1'),
 ('1170592628746878978','d7d6e2e4e2934f2c9385a623fd98c6f3','菜单管理','/system/menu','system/menu/index',1,NULL,1,3.00,'ant-design:menu-fold-outlined',0,0,0,0,'1'),
 ('45c966826eeff4c99b8f8ebfe74511fc','d7d6e2e4e2934f2c9385a623fd98c6f3','部门管理','/system/depart','system/depart/index',1,NULL,1,4.00,'ant-design:team',0,0,0,0,'1'),
-('1438782851980210178','d7d6e2e4e2934f2c9385a623fd98c6f3','数据字典','/system/dict','system/dict/index',1,NULL,1,5.00,'ant-design:hdd-twotone',0,0,0,0,'1'),
-('sa001','','评论情感分析','/sentiment','layouts/RouteView',1,'/sentiment/dashboard',0,1.00,'ant-design:bar-chart-outlined',0,0,0,0,'1'),
-('sa002','sa001','分析概览','/sentiment/dashboard','sentiment/dashboard/index',1,NULL,1,1.00,'ant-design:dashboard-outlined',1,1,0,0,'1'),
-('sa003','sa001','单条分析','/sentiment/analyze','sentiment/analyze/index',1,NULL,1,2.00,'ant-design:comment-outlined',1,1,0,0,'1'),
-('sa004','sa001','优缺点洞察','/sentiment/insights','sentiment/insights/index',1,NULL,1,3.00,'ant-design:bulb-outlined',1,1,0,0,'1');
+('1438782851980210178','d7d6e2e4e2934f2c9385a623fd98c6f3','数据字典','/system/dict','system/dict/index',1,NULL,1,5.00,'ant-design:hdd-twotone',0,0,0,0,'1');
 
 INSERT INTO `sys_permission` (`id`,`parent_id`,`name`,`url`,`component`,`menu_type`,`perms`,`sort_no`,`is_leaf`,`del_flag`,`status`) VALUES
 ('1214462306546319362','3f915b2769fc80648e92d04e84ca059d','新增用户','','',2,'system:user:add',1.00,1,0,'1'),
@@ -265,11 +260,7 @@ INSERT INTO `sys_role_permission` (`id`,`role_id`,`permission_id`) VALUES
 ('rp009','f6817f48af4fb3af11b9e8bf182f618b','1214462306546319362'),
 ('rp010','f6817f48af4fb3af11b9e8bf182f618b','1214376304951664642'),
 ('rp011','f6817f48af4fb3af11b9e8bf182f618b','1214376304951664643'),
-('rp012','f6817f48af4fb3af11b9e8bf182f618b','1214376304951664644'),
-('rp_sa001','f6817f48af4fb3af11b9e8bf182f618b','sa001'),
-('rp_sa002','f6817f48af4fb3af11b9e8bf182f618b','sa002'),
-('rp_sa003','f6817f48af4fb3af11b9e8bf182f618b','sa003'),
-('rp_sa004','f6817f48af4fb3af11b9e8bf182f618b','sa004');
+('rp012','f6817f48af4fb3af11b9e8bf182f618b','1214376304951664644');
 
 -- 字典（系统）
 INSERT INTO `sys_dict` (`id`,`dict_name`,`dict_code`,`description`,`del_flag`,`type`,`create_by`,`create_time`) VALUES
@@ -278,7 +269,7 @@ INSERT INTO `sys_dict` (`id`,`dict_name`,`dict_code`,`description`,`del_flag`,`t
 ('a7adbcd86c37f7dbc9b66945c82ef9e6','1是0否','yn','是否',0,0,'admin','2019-05-22 19:29:29'),
 ('1174511106530525185','机构类型','org_category','机构类型',0,0,'admin','2019-09-19 10:30:43'),
 ('4c753b5293304e7a445fd2741b46529d','字典状态','dict_item_status','字典项状态',0,1,'admin','2020-06-18 23:18:42'),
-('2e02df51611a4b9632828ab7e5338f00','权限策略','perms_type','权限策略',0,0,'admin','2019-04-26 18:26:55'),
+('2e02df51611a4b9632828ab7e5338f00','权限策略','perms_type','权限策略',0,0,'admin','2019-04-26 18:26:55');
 
 INSERT INTO `sys_dict_item` (`id`,`dict_id`,`item_text`,`item_value`,`sort_order`,`status`,`create_by`,`create_time`) VALUES
 ('di001','3d9a351be3436fbefb1307d4cfb49bf2','男','1',1,1,'admin','2019-01-04 14:56:32'),
@@ -286,8 +277,8 @@ INSERT INTO `sys_dict_item` (`id`,`dict_id`,`item_text`,`item_value`,`sort_order
 ('di007','fc6cd58fde2e8481db10d3a1e68ce70c','正常','1',1,1,'admin','2019-03-18 21:57:25'),
 ('di008','fc6cd58fde2e8481db10d3a1e68ce70c','冻结','2',2,1,'admin','2019-03-18 21:57:25'),
 ('di009','a7adbcd86c37f7dbc9b66945c82ef9e6','是','1',1,1,'admin','2019-05-22 19:29:29'),
-('di010','a7adbcd86c37f7dbc9b66945c82ef9e6','否','0',2,1,'admin','2019-05-22 19:29:29'),
+('di010','a7adbcd86c37f7dbc9b66945c82ef9e6','否','0',2,1,'admin','2019-05-22 19:29:29');
 
 SET FOREIGN_KEY_CHECKS = 1;
 
-SELECT 'sentiment-plus slim sql 初始化完成' AS message;
+SELECT 'system-config slim sql 初始化完成' AS message;
