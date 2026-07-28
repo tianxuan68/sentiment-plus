@@ -3,11 +3,14 @@
 JeecgBoot 精简版 FastAPI：仅系统配置 API（用户 / 角色 / 菜单 / 部门 / 字典 / 登录鉴权）。
 
 ```powershell
-copy .env.example .env
+# 在仓库根目录安装依赖
+cd ..
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
-python scripts/init_slim_db.py
-.\.venv\Scripts\python run.py
+cd jeecg-fastapi
+copy .env.example .env
+..\.venv\Scripts\python scripts/init_slim_db.py
+..\.venv\Scripts\python run.py
 ```
 
 API：`http://localhost:8000/jeecg-boot`  

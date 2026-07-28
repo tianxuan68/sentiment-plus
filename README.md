@@ -121,12 +121,12 @@ sentiment-ai/
 ### 后端
 
 ```powershell
-cd jeecg-fastapi
-copy .env.example .env
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
-python scripts/init_slim_db.py
-.\.venv\Scripts\python run.py
+cd jeecg-fastapi
+copy .env.example .env
+..\.venv\Scripts\python scripts/init_slim_db.py
+..\.venv\Scripts\python run.py
 ```
 
 - API 前缀：`http://localhost:8000/jeecg-boot`
