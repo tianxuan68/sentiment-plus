@@ -1,0 +1,16 @@
+{
+  "random_seed": 68,
+  "aspect_types": ["质量", "价格", "物流", "服务", "包装"],
+  "annotate_pool_size": 3000,
+  "train_ratio": 0.8,
+  "val_ratio": 0.1,
+  "test_ratio": 0.1,
+  "model_name": "bert-base-chinese",
+  "max_length": 128,
+  "batch_size": 16,
+  "learning_rate": 3e-5,
+  "epochs": 3,
+  "entity_f1_target": 0.85,
+  "artifacts_dir": "artifacts/aspect_ner",
+  "metrics_path": "artifacts/metrics/ner_f1.json"
+}

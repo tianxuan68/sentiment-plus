@@ -1,0 +1,6 @@
+# 5号 · aspect_ner 可选训练依赖（训练 BERT NER 时使用）
+# 安装: pip install -r sentiment-ai/requirements-ml.txt
+torch>=2.2.0
+transformers>=4.40.0
+jieba>=0.42.1
+seqeval>=0.0.22
