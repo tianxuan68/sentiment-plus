@@ -41,9 +41,9 @@ MODEL_PARAMS = {
 
 # 路径配置
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, 'data')
-MODEL_DIR = os.path.join(BASE_DIR, 'models')
-RESULT_DIR = os.path.join(BASE_DIR, 'results')
+DATA_DIR = os.path.join(BASE_DIR, '..', '..', '..', 'data', 'raw')
+MODEL_DIR = os.path.join(BASE_DIR, '..', '..', '..', 'ml', 'models')
+RESULT_DIR = os.path.join(BASE_DIR, '..', '..', '..', 'artifacts')
 
 # 确保目录存在
 os.makedirs(DATA_DIR, exist_ok=True)
