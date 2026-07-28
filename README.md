@@ -3,7 +3,7 @@
 商品评论情感分析系统。管理端基于 Jeecg FastAPI + Vue3；AI 能力独立为 `sentiment-ai`，按团队分工分包，通过 HTTP 与后端协作。
 
 设计与验收细节见：[商品评论情感分析项目设计2.md](./商品评论情感分析项目设计2.md)  
-按人可执行任务细化见：[任务细化/](./任务细化/)（入口：[00-总览与全局约定.md](./任务细化/00-总览与全局约定.md)）
+按人可执行任务细化见：[任务细化/](./任务细化/)（入口：[00-总览与全局约定.md](./任务细化/00-总览与全局约定.md) · 函数契约：[01-函数接口对照表.md](./任务细化/01-函数接口对照表.md)）
 
 ## 总体架构
 
@@ -26,7 +26,7 @@
 | 功能模块 | 人员 | 负责任务 | 代码/产物目录（规划） |
 |----------|------|----------|----------------------|
 | 商品评论情感分类 | 毛鑫泽 | 传统 ML Baseline（TF-IDF + ≥3 模型） | `sentiment-ai/pipelines/sentiment/baseline/` |
-| | 陈江平 | BiLSTM+Attention；相对 CNN +2% F1 | `sentiment-ai/pipelines/sentiment/bilstm/` |
+| | 陈江平 | BiLSTM+Attention；相对 Baseline +2% F1 | `sentiment-ai/pipelines/sentiment/bilstm/` |
 | | 胡潇潇 | BERT 微调；主推理入口交 1 号 | `sentiment-ai/pipelines/sentiment/bert/`、`app/` |
 | PPT 制作 | 6号 | 路演 PPT 汇总成片 | `sentiment-ai/pitch_assets/` |
 | 用户评价分析 | 郑平高 | 前后端 + 比例图/趋势图 | `jeecg-fastapi/`、`jeecgboot-vue3/` |
@@ -44,7 +44,7 @@
 - 中文：`train.csv` → `sentence`、`label`、`dataset`
 - 英文：`data.csv` → `reviewText`、`overall`、`asin`（≥5 万）
 - 划分：train:val:test = 8:1:1，`random_seed=68`，全组共用；中英不混训
-- 情感对比链：Baseline → TextCNN → BiLSTM → BERT（四模型）
+- 情感对比链：Baseline → BiLSTM → BERT（三模型）
 
 ## 仓库目录结构
 
@@ -83,7 +83,6 @@ sentiment-ai/
 │   ├── preprocess/                   # 刘攀：清洗 / jieba / 停用词
 │   ├── sentiment/
 │   │   ├── baseline/                 # 毛鑫泽：TF-IDF + KNN/DT/RF
-│   │   ├── cnn/                      # TextCNN（对比实验用）
 │   │   ├── bilstm/                   # 陈江平：Embedding+BiLSTM+Attention
 │   │   └── bert/                     # 胡潇潇：BertForSequenceClassification
 │   ├── keywords/                     # 杨国东：KeyBERT vs TF-IDF
@@ -142,14 +141,15 @@ pnpm dev
 
 开发服务器默认：`http://localhost:3100`（代理到后端 `8000`）。
 
-## 功能入口（当前管理壳）
+## 功能入口
 
-登录后默认进入用户管理：`/system/user`。
+登录后默认进入单条分析：`/sentiment/analyze`。
 
-- 用户管理 `/system/user`
-- 角色管理 `/system/role`
-- 菜单管理 `/system/menu`
-- 部门管理 `/system/depart`
-- 数据字典 `/system/dict`
+- 单条分析 `/sentiment/analyze`
+- 评价看板 `/sentiment/dashboard`
+- 优缺点洞察 `/sentiment/pros-cons`
+- 模型对比 `/sentiment/models`（Baseline→BiLSTM→BERT 三模型链）
+- 关键词对比 `/sentiment/keywords`（KeyBERT vs TF-IDF）
+- 系统管理 `/system/user` 等（用户 / 角色 / 菜单 / 部门 / 字典）
 
-> 评论分析业务页与 AI 推理接入由郑平高按设计文档接口约定推进；`sentiment-ai` 当前以目录与文档规划为主。
+> 业务后端默认 `SENTIMENT_AI_MOCK=true` 可演示；关闭 Mock 并启动 `sentiment-ai` 后转发真实推理。已有库需执行 `jeecg-fastapi/sql/patch_add_sentiment_menus.sql` 后重新登录。

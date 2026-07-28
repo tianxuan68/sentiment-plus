@@ -68,7 +68,7 @@ export default {
     forgetFormTitle: '重置密码',
 
     signInTitle: 'Sentiment-Plus',
-    signInDesc: '天选 Pro 企业级开发平台 · 智能质检 · 标准匹配 · 全流程管控',
+    signInDesc: '商品评论情感分析 · 情感 / 关键词 / 属性洞察',
     policy: '我同意敲敲云隐私政策',
     scanSign: `扫码后，即可完成登录`,
     scanSuccess: `扫码成功，登录中`,

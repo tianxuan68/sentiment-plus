@@ -235,9 +235,15 @@ INSERT INTO `sys_depart` (`id`,`parent_id`,`depart_name`,`depart_order`,`org_cat
 INSERT INTO `sys_user_depart` (`ID`,`user_id`,`dep_id`) VALUES
 ('1996175712356261891','e9ca23d68d884d4ebb19d07889727dae','4f1765520d6346f9bd9c79e2479e5b12');
 
--- 菜单（仅系统管理）
+-- 菜单：评论分析（业务入口）+ 系统管理
 INSERT INTO `sys_permission` (`id`,`parent_id`,`name`,`url`,`component`,`is_route`,`redirect`,`menu_type`,`sort_no`,`icon`,`is_leaf`,`keep_alive`,`hidden`,`del_flag`,`status`) VALUES
-('d7d6e2e4e2934f2c9385a623fd98c6f3','','系统管理','/isystem','layouts/RouteView',1,'/system/user',0,1.00,'ant-design:setting',0,0,0,0,'1'),
+('sa010','','评论分析','/sentiment','layouts/RouteView',1,'/sentiment/analyze',0,1.00,'ant-design:comment',0,0,0,0,'1'),
+('sa011','sa010','单条分析','/sentiment/analyze','sentiment/analyze/index',1,NULL,1,1.00,'ant-design:edit',1,1,0,0,'1'),
+('sa012','sa010','评价看板','/sentiment/dashboard','sentiment/dashboard/index',1,NULL,1,2.00,'ant-design:bar-chart',1,1,0,0,'1'),
+('sa013','sa010','优缺点洞察','/sentiment/pros-cons','sentiment/prosCons/index',1,NULL,1,3.00,'ant-design:like',1,1,0,0,'1'),
+('sa014','sa010','模型对比','/sentiment/models','sentiment/models/index',1,NULL,1,4.00,'ant-design:fund-outlined',1,1,0,0,'1'),
+('sa015','sa010','关键词对比','/sentiment/keywords','sentiment/keywords/index',1,NULL,1,5.00,'ant-design:tags-outlined',1,1,0,0,'1'),
+('d7d6e2e4e2934f2c9385a623fd98c6f3','','系统管理','/isystem','layouts/RouteView',1,'/system/user',0,2.00,'ant-design:setting',0,0,0,0,'1'),
 ('3f915b2769fc80648e92d04e84ca059d','d7d6e2e4e2934f2c9385a623fd98c6f3','用户管理','/system/user','system/user/index',1,NULL,1,1.00,'ant-design:user',0,1,0,0,'1'),
 ('190c2b43bec6a5f7a4194a85db67d96a','d7d6e2e4e2934f2c9385a623fd98c6f3','角色管理','/system/role','system/role/index',1,NULL,1,2.00,'ant-design:solution',0,1,0,0,'1'),
 ('1170592628746878978','d7d6e2e4e2934f2c9385a623fd98c6f3','菜单管理','/system/menu','system/menu/index',1,NULL,1,3.00,'ant-design:menu-fold-outlined',0,0,0,0,'1'),
@@ -251,6 +257,12 @@ INSERT INTO `sys_permission` (`id`,`parent_id`,`name`,`url`,`component`,`menu_ty
 ('1214376304951664644','190c2b43bec6a5f7a4194a85db67d96a','角色授权','','',2,'system:role:auth',1.00,1,0,'1');
 
 INSERT INTO `sys_role_permission` (`id`,`role_id`,`permission_id`) VALUES
+('rp_sa010','f6817f48af4fb3af11b9e8bf182f618b','sa010'),
+('rp_sa011','f6817f48af4fb3af11b9e8bf182f618b','sa011'),
+('rp_sa012','f6817f48af4fb3af11b9e8bf182f618b','sa012'),
+('rp_sa013','f6817f48af4fb3af11b9e8bf182f618b','sa013'),
+('rp_sa014','f6817f48af4fb3af11b9e8bf182f618b','sa014'),
+('rp_sa015','f6817f48af4fb3af11b9e8bf182f618b','sa015'),
 ('rp003','f6817f48af4fb3af11b9e8bf182f618b','d7d6e2e4e2934f2c9385a623fd98c6f3'),
 ('rp004','f6817f48af4fb3af11b9e8bf182f618b','3f915b2769fc80648e92d04e84ca059d'),
 ('rp005','f6817f48af4fb3af11b9e8bf182f618b','190c2b43bec6a5f7a4194a85db67d96a'),

@@ -61,5 +61,10 @@ class Settings(BaseSettings):
     spug_sms_api_url: str = ""
     spug_sms_name: str = "推送助手"
 
+    # sentiment-ai 推理服务（默认 Mock，可切真实转发）
+    sentiment_ai_base_url: str = "http://127.0.0.1:8100"
+    sentiment_ai_mock: bool = True
+    sentiment_ai_timeout: float = 1.5
+
 
 settings = Settings()

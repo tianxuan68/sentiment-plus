@@ -8,6 +8,7 @@ from app.api.sys.dict import dict_item_router, router as dict_router
 from app.api.sys.log import router as log_router
 from app.api.sys.login import router as login_router
 from app.api.sys.permission import router as permission_router
+from app.api.sys.review import router as review_router
 from app.api.sys.role import router as role_router
 from app.api.sys.role_index import router as role_index_router
 from app.api.sys.sms import router as sms_router
@@ -31,3 +32,4 @@ sys_router.include_router(third_login_router)
 sys_router.include_router(third_user_router)
 sys_router.include_router(sms_router)
 sys_router.include_router(log_router)
+sys_router.include_router(review_router)

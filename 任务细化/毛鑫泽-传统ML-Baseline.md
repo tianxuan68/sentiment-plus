@@ -72,7 +72,94 @@
 
 ------------------------------------------------------------------------
 
-# 七、交付自检
+------------------------------------------------------------------------
+
+# 八、函数级接口契约
+
+> 文件：`pipelines/sentiment/baseline/train_baseline.py`、`evaluate.py`、`export_best.py`
+
+## 8.1 本岗必须实现的函数
+
+```python
+def load_corpus(
+    csv_path: str = "data/processed/clean_train.csv",
+    split_dir: str = "data/processed/splits/",
+    split: Literal["train", "val", "test"] = "train",
+) -> tuple[list[str], list[int]]:
+    """读语料并按 splits 过滤。
+    入参: clean_train 路径、划分目录、split 名
+    返回: (texts, labels) — texts 用 text_clean 列
+    上游: 刘攀 run_preprocess() 产出
+    """
+
+def fit_vectorizer(texts: list[str]) -> TfidfVectorizer:
+    """仅在 train 集 fit。
+    入参: 训练集 text_clean 列表
+    返回: 已 fit 的 TfidfVectorizer(max_features=20000, ngram_range=(1,2))
+    """
+
+def train_classifier(
+    X, y,
+    model_name: Literal["knn", "dt", "rf"],
+    **kwargs,
+) -> BaseEstimator:
+    """训练单个传统模型。
+    入参: 稀疏特征矩阵 X、标签 y、模型名
+    返回: 已 fit 的分类器
+    """
+
+def evaluate(y_true: list[int], y_pred: list[int]) -> dict:
+    """统一评估。
+    入参: 真实/预测标签
+    返回: {
+        "acc": float,
+        "precision": float,
+        "recall": float,
+        "f1": float,
+        "model": str,
+    }
+    """
+
+def predict(text: str, pipeline: Pipeline) -> dict:
+    """单条推理（可选，供对比实验）。
+    入参: 原始或 text_clean 字符串；含 vectorizer+clf 的 Pipeline
+    返回: { "label": int, "prob": float, "model": "baseline_rf" }
+    """
+
+def export_best(
+    pipeline: Pipeline,
+    metrics: dict,
+    out_model: str = "artifacts/sentiment/baseline/best_model.joblib",
+    out_metrics: str = "artifacts/metrics/baseline_metrics.json",
+) -> None:
+    """导出最佳模型与指标 JSON。
+    下游: 胡潇潇 build_model_compare() 读 baseline_metrics.json
+    """
+```
+
+## 8.2 上下游
+
+| 方向 | 对象 | 契约 |
+| ---- | ---- | ---- |
+| 上游 | 刘攀 | `clean_train.csv` + `splits/` |
+| 下游 | 陈江平 / 胡潇潇 | `baseline_metrics.json` 中 `acc`、`f1` |
+| 下游 | 6号 | 柱状图 PNG |
+
+## 8.3 metrics JSON 字段
+
+```json
+{
+  "models": [
+    { "name": "knn", "acc": 0.86, "precision": 0.85, "recall": 0.84, "f1": 0.845 }
+  ],
+  "best_model": "rf",
+  "best": { "acc": 0.872, "f1": 0.861 }
+}
+```
+
+------------------------------------------------------------------------
+
+# 九、交付自检
 
 | 检查项 | 达标 |
 | ------ | ---- |

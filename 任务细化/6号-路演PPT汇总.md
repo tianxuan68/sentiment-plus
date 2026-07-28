@@ -20,8 +20,8 @@
 # 二、实现步骤
 
 1. 按主设计 §5.3 清单催收各员 PNG（宽 ≥1920）。
-2. 统一字体、配色、**指标口径**（同一测试集、同一 seed=68、四模型同一评测脚本）。
-3. 大纲建议顺序：封面（1号）→ 痛点/数据（杨国东）→ 预处理（刘攀）→ Baseline（毛鑫泽）→ CNN/BiLSTM（陈江平）→ BERT/SOTA（胡潇潇）→ 关键词/优缺点（杨国东/邓新晓）→ 属性 NER/情感（5号/陈江平/属性BERT）→ 统计闭环（待定）→ Demo（1号）→ 收尾。
+2. 统一字体、配色、**指标口径**（同一测试集、同一 seed=68、三模型同一评测脚本）。
+3. 大纲建议顺序：封面（1号）→ 痛点/数据（杨国东）→ 预处理（刘攀）→ Baseline（毛鑫泽）→ BiLSTM（陈江平）→ BERT/SOTA（胡潇潇）→ 关键词/优缺点（杨国东/邓新晓）→ 属性 NER/情感（5号/陈江平/属性BERT）→ 统计闭环（待定）→ Demo（1号）→ 收尾。
 4. 成片导出 PDF/PPTX 至 `pitch_assets/no06_ppt/final.pptx`（大文件可外链，仓库留说明）。
 
 ------------------------------------------------------------------------
@@ -38,8 +38,8 @@
 | 毛鑫泽 | 核心效果 | Baseline 多模型 Acc/F1 柱状图 + 指标表 | `mao_xinze/` |
 | 待定（统计） | 数据资产 / 商业闭环 | 正负饼图、评分柱状图、KPI 卡 | 待定子目录 |
 | 5号 | 属性级洞察 | BIO 示例、5 类覆盖图、NER F1 卡 | `no05_ner/` |
-| 陈江平 | 核心效果 / 属性 | Baseline/CNN/BiLSTM 对比图；属性 F1 卡 | `chen_jiangping/` |
-| 胡潇潇 | 核心效果 | SOTA 指标卡、四模型对比图、样例 | `hu_xiaoxiao/` |
+| 陈江平 | 核心效果 / 属性 | Baseline/BiLSTM 对比图；属性 F1 卡 | `chen_jiangping/` |
+| 胡潇潇 | 核心效果 | SOTA 指标卡、三模型对比图、样例 | `hu_xiaoxiao/` |
 | 邓新晓 | 关键词 / 优缺点 | 优/缺点词云、Top10 对照表 | `deng_xinxiao/` |
 | 杨国东 | 关键词 | KeyBERT vs TF-IDF 对照图 | `yang_guodong/` |
 
@@ -53,7 +53,24 @@
 
 ------------------------------------------------------------------------
 
-# 五、交付自检
+# 五、素材 ↔ 上游函数对照（催收时用）
+
+| 提供人 | 路演图 | 对应上游函数（验收是否真实产出） |
+| ------ | ------ | -------------------------------- |
+| 刘攀 | 清洗前后对照 | `run_preprocess()` → `clean_train.csv` |
+| 杨国东 | 数据规模页 | `build_unified_reviews()` |
+| 杨国东 | KeyBERT vs TF-IDF | `compare_keywords(text, top_n)` |
+| 毛鑫泽 | Baseline 柱状图 | `export_best()` → `baseline_metrics.json` |
+| 陈江平 | Baseline/BiLSTM 对比 | `train_bilstm_sentiment()` |
+| 胡潇潇 | 三模型 + SOTA | `build_model_compare()` / `predict_sentiment()` |
+| 5号 | BIO / NER F1 | `predict_entities()` |
+| 邓新晓 | 词云 Top10 | `mine_pros_cons()` |
+| 统计待定 | 饼图/评分/KPI | `build_satisfaction_report()` |
+| 郑平高 | Demo 截图/GIF | 前端 5 页 + `analyze_review()` 联调 |
+
+------------------------------------------------------------------------
+
+# 六、交付自检
 
 | 检查项 | 达标 |
 | ------ | ---- |

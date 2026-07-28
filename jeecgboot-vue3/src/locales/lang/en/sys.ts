@@ -70,7 +70,7 @@ export default {
     forgetFormTitle: 'Reset password',
 
     signInTitle: 'Sentiment-Plus',
-    signInDesc: 'E-commerce QC platform · Intelligent inspection · Standard matching',
+    signInDesc: 'Product review sentiment · Emotion / Keywords / Aspect insights',
     policy: 'I agree to the xxx Privacy Policy',
     scanSign: `scanning the code to complete the login`,
 
