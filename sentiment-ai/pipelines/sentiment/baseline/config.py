@@ -4,7 +4,7 @@ Baseline模型配置文件
 import os
 
 # 数据配置
-# 优先使用刘攀清洗后的数据，如果没有则使用原始数据
+# 优先使用清洗后的数据，如果没有则使用原始数据
 DATA_FILE = 'train.csv'
 CLEAN_DATA_FILE = 'clean_train.csv'
 TEXT_COLUMN = 'sentence'
@@ -41,11 +41,13 @@ MODEL_PARAMS = {
 
 # 路径配置
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, 'data')
-MODEL_DIR = os.path.join(BASE_DIR, 'models')
-RESULT_DIR = os.path.join(BASE_DIR, 'results')
+DATA_DIR = os.path.join(BASE_DIR, '..', '..', '..', 'data', 'raw')
+PROCESSED_DIR = os.path.join(BASE_DIR, '..', '..', '..', 'data', 'processed')
+MODEL_DIR = os.path.join(BASE_DIR, '..', '..', '..', 'ml', 'models')
+RESULT_DIR = os.path.join(BASE_DIR, '..', '..', '..', 'artifacts')
 
 # 确保目录存在
 os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(PROCESSED_DIR, exist_ok=True)
 os.makedirs(MODEL_DIR, exist_ok=True)
 os.makedirs(RESULT_DIR, exist_ok=True)

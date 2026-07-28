@@ -22,7 +22,7 @@ def load_data(data_path=None):
     """
     # 如果未指定路径，优先查找clean_train.csv
     if data_path is None:
-        clean_path = os.path.join(DATA_DIR, CLEAN_DATA_FILE)
+        clean_path = os.path.join(PROCESSED_DIR, CLEAN_DATA_FILE)
         raw_path = os.path.join(DATA_DIR, DATA_FILE)
 
         if os.path.exists(clean_path):
@@ -35,7 +35,7 @@ def load_data(data_path=None):
             print(f"使用原始数据: {DATA_FILE}")
         else:
             raise FileNotFoundError(
-                f"未找到数据文件，请确保 {DATA_DIR} 目录下存在 {DATA_FILE} 或 {CLEAN_DATA_FILE}"
+                f"未找到数据文件，请确保 {PROCESSED_DIR} 目录下存在 {CLEAN_DATA_FILE} 或 {DATA_DIR} 目录下存在 {DATA_FILE}"
             )
     else:
         # 根据文件名列名

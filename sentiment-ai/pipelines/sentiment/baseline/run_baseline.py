@@ -131,7 +131,7 @@ def main():
         print(f"\n错误: {str(e)}")
         print("\n请确保数据文件已放置在正确的位置:")
         print(f"  - 原始数据: {os.path.join(DATA_DIR, DATA_FILE)}")
-        print(f"  - 清洗数据: {os.path.join(DATA_DIR, CLEAN_DATA_FILE)}")
+        print(f"  - 清洗数据: {os.path.join(PROCESSED_DIR, CLEAN_DATA_FILE)}")
         return None
 
     except Exception as e:
