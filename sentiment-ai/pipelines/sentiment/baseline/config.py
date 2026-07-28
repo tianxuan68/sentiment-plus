@@ -4,7 +4,7 @@ Baseline模型配置文件
 import os
 
 # 数据配置
-# 优先使用刘攀清洗后的数据，如果没有则使用原始数据
+# 优先使用清洗后的数据，如果没有则使用原始数据
 DATA_FILE = 'train.csv'
 CLEAN_DATA_FILE = 'clean_train.csv'
 TEXT_COLUMN = 'sentence'
