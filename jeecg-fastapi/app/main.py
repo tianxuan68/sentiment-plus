@@ -38,22 +38,22 @@ app.include_router(websocket_router, prefix=settings.context_path)
 @app.on_event("startup")
 def log_startup_config():
     from app.db.startup import mark_db_ready, start_background_db_connect
-    from app.db.session import warmup_db_pool
+    from app.db.session import ping_db, warmup_db_pool
 
-    if settings.db_warmup_enabled:
-        try:
+    try:
+        if settings.db_warmup_enabled:
             elapsed = warmup_db_pool()
-            mark_db_ready()
             logger.info("数据库连接池已预热，首次连通耗时 %.2fs", elapsed)
-            if elapsed > 1.0:
-                logger.warning(
-                    "数据库响应较慢（>1s）。开发环境建议使用本地 MySQL，见 .env.example 中 DATABASE_URL 注释"
-                )
-        except Exception as exc:
-            logger.warning("启动预热数据库失败，将转入后台重试: %s", exc)
-            start_background_db_connect()
-    else:
-        logger.info("已跳过启动时数据库预热（DB_WARMUP_ENABLED=false），后台自动连接…")
+        else:
+            elapsed = ping_db()
+            logger.info("数据库连通检查通过，耗时 %.2fs", elapsed)
+        mark_db_ready()
+        if elapsed > 1.0:
+            logger.warning(
+                "数据库响应较慢（>1s）。开发环境建议使用本地 MySQL，见 .env.example 中 DATABASE_URL 注释"
+            )
+    except Exception as exc:
+        logger.warning("启动时连接数据库失败，将转入后台重试: %s", exc)
         start_background_db_connect()
 
     if is_spug_configured():
@@ -64,11 +64,13 @@ def log_startup_config():
 
 @app.exception_handler(OperationalError)
 async def db_operational_error_handler(request: Request, exc: OperationalError):
-    logger.error("数据库操作失败 %s %s: %s", request.method, request.url.path, exc)
+    detail = str(getattr(exc, "orig", exc) or exc)
+    logger.error("数据库操作失败 %s %s: %s", request.method, request.url.path, detail)
+    hint = "请确认 MySQL 已启动，且 jeecg-fastapi/.env 中 DATABASE_URL 账号密码正确（密码含 @ 需写成 %40）。"
     return JSONResponse(
         status_code=200,
         content=Result.error(
-            "数据库连接异常，请稍后重试。若持续失败，请检查远程 MySQL 或改用本地库。",
+            f"数据库连接异常，请稍后重试。{hint}",
             500,
         ).model_dump(),
     )
