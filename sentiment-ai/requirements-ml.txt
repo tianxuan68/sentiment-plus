@@ -1,6 +1,17 @@
-# 5号 · aspect_ner 可选训练依赖（训练 BERT NER 时使用）
+# sentiment-ai 可选 ML 依赖（BERT / BiLSTM / KeyBERT 训练与推理时使用）
 # 安装: pip install -r sentiment-ai/requirements-ml.txt
+#
+# 覆盖：
+# - 5号 aspect_ner：BertForTokenClassification + seqeval
+# - 胡潇潇 / 陈江平：BERT / BiLSTM（torch）
+# - 杨国东 / 邓新晓：KeyBERT + Sentence-BERT
+
 torch>=2.2.0
 transformers>=4.40.0
+accelerate>=0.30.0
+datasets>=2.19.0
 jieba>=0.42.1
 seqeval>=0.0.22
+keybert>=0.9.0
+sentence-transformers>=3.0.0
+tqdm>=4.66.0

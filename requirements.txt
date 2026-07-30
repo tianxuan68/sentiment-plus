@@ -43,7 +43,7 @@ uvicorn==0.49.0
 watchfiles==1.2.0
 websockets==16.0
 
-# 数据分析 / 可视化（兼容 Python 3.11）
+# 数据分析 / 可视化 / 传统 ML（兼容 Python 3.11）
 numpy==2.3.3
 pandas==3.0.5
 matplotlib==3.10.3
@@ -54,3 +54,12 @@ xlsxwriter==3.2.5
 xlrd==2.0.1
 pyarrow==20.0.0
 jieba==0.42.1
+scikit-learn==1.9.0
+joblib==1.5.3
+threadpoolctl==3.6.0
+tqdm==4.70.0
+wordcloud==1.9.6
+
+# 深度学习 / KeyBERT 等可选重依赖见：
+#   pip install -r sentiment-ai/requirements-ml.txt
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
