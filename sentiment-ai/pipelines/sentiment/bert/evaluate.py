@@ -16,8 +16,8 @@ from torch.utils.data import DataLoader
 from transformers import BertForSequenceClassification, BertTokenizer
 
 # 从同包导入数据集类和评估函数
-from .dataset import SentimentDataset
-from .train import evaluate  # 复用训练模块中的评估函数
+from dataset import SentimentDataset
+from train import evaluate  # 复用训练模块中的评估函数
 
 # sentiment-ai 项目根目录
 # 通过当前文件路径向上查找3级目录获取项目根目录
