@@ -28,7 +28,7 @@ from transformers import (
     get_linear_schedule_with_warmup,
 )
 
-from .dataset import SentimentDataset
+from dataset import SentimentDataset
 
 # sentiment-ai 根目录
 AI_ROOT = Path(__file__).resolve().parents[3]
