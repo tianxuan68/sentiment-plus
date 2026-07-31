@@ -1,0 +1,11 @@
+# 全组统一数据划分（设计文档 5.1）
+# 中文主数据 train.csv：sentence / label；中英不混训
+random_seed: 68
+train_ratio: 0.8
+val_ratio: 0.1
+test_ratio: 0.1
+source_csv: data/raw/train.csv
+output_dir: data/processed
+columns:
+  text: sentence
+  label: label
