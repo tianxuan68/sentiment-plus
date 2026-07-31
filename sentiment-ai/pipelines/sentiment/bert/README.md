@@ -51,11 +51,15 @@ python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ## 训练流程（在 sentiment-ai 根目录）
 
 ```powershell
+# 0. 先清洗（去标签噪声 + 高置信子集 + 类别平衡）→ bert_train_clean.csv
+python -m pipelines.preprocess.clean_for_bert
 python -m pipelines.sentiment.bert.split_data
 python -m pipelines.sentiment.bert.train
 python -m pipelines.sentiment.bert.evaluate
 python -m pipelines.sentiment.bert.infer --text "味道很好" "物流太慢"
 ```
+
+> 说明：原始 `train.csv` 标签噪声较大，全量微调 Acc 容易卡在 ~0.76。必须先跑 `clean_for_bert`。
 
 训练结束后把 `artifacts/bert/best/` 整包发回给你（用于推理 / 交 1 号）。
 
