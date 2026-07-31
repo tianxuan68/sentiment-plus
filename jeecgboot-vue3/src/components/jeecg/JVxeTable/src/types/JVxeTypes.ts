@@ -32,7 +32,7 @@ export enum JVxeTypes {
   userSelect = 'user-select',
 
   // 拖轮Tags（暂无用）
-  tags = 'tags', // TODO 待实现
+  tags = 'tags', //  待实现
 
   slot = 'slot',
   normal = 'normal',

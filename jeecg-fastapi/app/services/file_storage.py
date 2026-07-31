@@ -1,6 +1,6 @@
 """本地文件上传与访问（兼容 JeecgBoot JImageUpload 路径约定）。"""
-from __future__ import annotations
 
+# 1.导包
 import re
 from datetime import datetime
 from pathlib import Path

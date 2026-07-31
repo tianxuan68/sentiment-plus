@@ -1,7 +1,6 @@
 """短信验证码发送（Spug Push）。"""
-from __future__ import annotations
 
-import logging
+# 1.导包
 import random
 import re
 from typing import Any, Dict
@@ -10,8 +9,7 @@ import httpx
 
 from app.core.config import settings
 
-logger = logging.getLogger(__name__)
-
+# 2.手机号校验
 _MOBILE_RE = re.compile(r"^1[3-9]\d{9}$")
 
 
@@ -63,7 +61,7 @@ def send_spug_sms(mobile: str, code: str, *, validity_minutes: int = 5) -> None:
 
     name = settings.spug_sms_name or "推送助手"
     phone = mobile.strip()
-    logger.info("Spug SMS -> %s to=%s****%s", api_url, phone[:3], phone[-4:])
+    print(f'Spug 短信请求：{api_url} to={phone[:3]}****{phone[-4:]}')
 
     try:
         with httpx.Client(timeout=15, trust_env=False) as client:
@@ -88,7 +86,7 @@ def send_spug_sms(mobile: str, code: str, *, validity_minutes: int = 5) -> None:
             if resp.status_code >= 400:
                 _ensure_spug_success(data)
             _ensure_spug_success(data)
-            logger.info("Spug SMS response: %s", data)
+            print(f'Spug 短信响应：{data}')
     except ValueError:
         raise
     except httpx.HTTPStatusError as exc:

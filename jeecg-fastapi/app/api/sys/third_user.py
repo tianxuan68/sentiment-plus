@@ -1,6 +1,6 @@
 """第三方用户绑定/创建 API。"""
-from __future__ import annotations
 
+# 1.导包
 from typing import Any, Dict
 
 from fastapi import APIRouter, Depends

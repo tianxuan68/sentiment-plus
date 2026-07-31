@@ -107,7 +107,7 @@
       }
 
       /**
-       * TODO 清空
+       *  清空
        */
       function handleEmpty() {
         showText.value = '';

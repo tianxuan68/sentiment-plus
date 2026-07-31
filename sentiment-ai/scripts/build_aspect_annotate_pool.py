@@ -1,59 +1,62 @@
-"""从 train.csv 抽样 ≥3000 句，供 5 号标注（杨国东未交付时的兜底脚本）。"""
+"""
+从 train.csv 抽样 ≥3000 句，供 5 号标注（杨国东未交付时的兜底脚本）
+"""
 
-from __future__ import annotations
-
-import argparse
+# 1.导包
 import csv
 import random
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+
+#  1.提前创建配置
+class Config:
+    def __init__(self):
+        self.root_path = str(Path(__file__).resolve().parents[1]).replace('\\', '/') + '/'
+        self.train_path = self.root_path + 'data/raw/train.csv'
+        self.output_path = self.root_path + 'data/samples/aspect_annotate_pool.csv'
+        self.n_sample = 3000
+        # 本项目约定 seed=68
+        self.seed = 68
+        self.min_len = 6
 
 
-def sample_for_annotation(
-    train_path: str | Path = "data/raw/train.csv",
-    n: int = 3000,
-    seed: int = 68,
-    output_path: str | Path = "data/samples/aspect_annotate_pool.csv",
-) -> dict:
-    train_p = ROOT / train_path
-    out_p = ROOT / output_path
-    out_p.parent.mkdir(parents=True, exist_ok=True)
+config = Config()
 
-    rows: list[dict] = []
-    with train_p.open("r", encoding="utf-8", newline="") as f:
+
+def process_data():
+    # 3.准备数据：读 train.csv
+    print(f'读取：{config.train_path}')
+    rows = []
+    with open(config.train_path, 'r', encoding='utf-8', newline='') as f:
         reader = csv.DictReader(f)
         for i, row in enumerate(reader):
-            sentence = (row.get("sentence") or "").strip()
-            if len(sentence) < 6:
+            sentence = (row.get('sentence') or '').strip()
+            if len(sentence) < config.min_len:
                 continue
-            rows.append(
-                {
-                    "id": str(i),
-                    "sentence": sentence,
-                    "label": row.get("label", ""),
-                }
-            )
+            rows.append({
+                'id': str(i),
+                'sentence': sentence,
+                'label': row.get('label', ''),
+            })
+    print(f'候选条数：{len(rows)}')
 
-    random.seed(seed)
-    sampled = random.sample(rows, min(n, len(rows)))
+    # 4.抽样
+    random.seed(config.seed)
+    sampled = random.sample(rows, min(config.n_sample, len(rows)))
+    print(f'抽样条数：{len(sampled)}，seed={config.seed}')
 
-    with out_p.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["id", "sentence", "label"])
+    # 5.导出
+    out_p = Path(config.output_path)
+    out_p.parent.mkdir(parents=True, exist_ok=True)
+    with out_p.open('w', encoding='utf-8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=['id', 'sentence', 'label'])
         writer.writeheader()
         writer.writerows(sampled)
 
-    return {"sampled": len(sampled), "seed": seed, "output_path": str(out_p)}
+    print(f'已导出：{config.output_path}')
+    return {'sampled': len(sampled), 'seed': config.seed, 'output_path': config.output_path}
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-n", type=int, default=3000)
-    parser.add_argument("--seed", type=int, default=68)
-    args = parser.parse_args()
-    result = sample_for_annotation(n=args.n, seed=args.seed)
-    print(result)
-
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    result = process_data()
+    print(f'结果：{result}')

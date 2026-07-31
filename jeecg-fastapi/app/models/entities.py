@@ -1,3 +1,6 @@
+"""SQLAlchemy ORM 实体定义。"""
+
+# 1.导包
 from datetime import date, datetime
 from typing import Optional
 

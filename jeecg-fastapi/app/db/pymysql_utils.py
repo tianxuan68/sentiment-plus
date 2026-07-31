@@ -1,6 +1,6 @@
 """PyMySQL 直连工具（DDL 迁移等需独立长超时的场景）。"""
-from __future__ import annotations
 
+# 1.导包
 from typing import Any
 from urllib.parse import unquote
 

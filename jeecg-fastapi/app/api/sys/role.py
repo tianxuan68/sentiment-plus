@@ -1,3 +1,6 @@
+"""角色管理 API。"""
+
+# 1.导包
 from datetime import datetime
 from typing import Optional
 

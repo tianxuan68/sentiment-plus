@@ -1,3 +1,6 @@
+"""菜单权限 API。"""
+
+# 1.导包
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, Query

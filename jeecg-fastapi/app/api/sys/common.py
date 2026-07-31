@@ -1,3 +1,6 @@
+"""通用接口：文件上传、静态资源等。"""
+
+# 1.导包
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session

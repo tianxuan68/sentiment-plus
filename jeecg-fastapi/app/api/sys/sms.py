@@ -1,15 +1,11 @@
 """短信验证码接口。"""
-from __future__ import annotations
 
-import logging
-
+# 1.导包
 from fastapi import APIRouter
 
 from app.schemas.response import Result
 from app.services.sms_service import generate_sms_code, is_spug_configured, send_spug_sms, validate_mobile
 from app.services.phone_captcha_service import captcha_validity_minutes, store_phone_captcha
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["短信"])
 
@@ -39,5 +35,5 @@ def send_sms(body: dict):
         return Result.ok(None, "验证码已发送")
 
     # 未配置 Spug：开发模式，验证码写在 message 里（前端成功时不弹窗，需看 Network 响应）
-    logger.warning("SPUG 未配置，开发模式验证码 mobile=%s code=%s", mobile, code)
+    print(f'SPUG 未配置，开发模式验证码 mobile={mobile} code={code}')
     return Result.ok({"devCode": code}, f"验证码已发送（开发模式验证码: {code}）")

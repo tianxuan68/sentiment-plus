@@ -59,5 +59,5 @@ export function getRequestToken({ headers }: requestParams): string | undefined 
   return headers?.authorization;
 }
 
-//TODO 接口父路径（写死不够灵活）
+// 接口父路径（写死不够灵活）
 export const baseUrl = '/jeecgboot/mock';

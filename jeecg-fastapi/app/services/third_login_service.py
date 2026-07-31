@@ -1,6 +1,6 @@
 """第三方登录业务逻辑。"""
-from __future__ import annotations
 
+# 1.导包
 import random
 import secrets
 import string

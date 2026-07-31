@@ -1,3 +1,6 @@
+"""登录相关 API。"""
+
+# 1.导包
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
@@ -20,6 +23,7 @@ from app.services.qrcode_login_service import create_login_qrcode, get_qrcode_lo
 from app.services.phone_captcha_service import pop_phone_captcha
 from app.services.user_service import get_user_roles, user_to_dict
 
+# 2.路由
 router = APIRouter(tags=["登录"])
 
 

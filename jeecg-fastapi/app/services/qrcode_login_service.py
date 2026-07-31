@@ -1,6 +1,6 @@
 """扫码登录（与 JeecgBoot LoginController 行为一致）。"""
-from __future__ import annotations
 
+# 1.导包
 from typing import Any, Dict
 
 from app.core.third_login_cache import get_value, set_value

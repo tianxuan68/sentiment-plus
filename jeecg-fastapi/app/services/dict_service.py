@@ -1,3 +1,6 @@
+"""数据字典查询与缓存。"""
+
+# 1.导包
 from typing import Any, Dict, List, Optional, Tuple
 
 import re

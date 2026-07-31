@@ -1,14 +1,17 @@
-# BERT 情感分类超参（设计文档 5.2 / 8号）
+# BERT 情感分类超参（以提高 F1 为目标）
 # 本地预训练权重（勿改回 huggingface 名，避免联网下载）
 model_name: artifacts/pretrained/bert-base-chinese
 num_labels: 2
 max_length: 128
 learning_rate: 2.0e-5
 batch_size: 16
-epochs: 3
+epochs: 4
 optimizer: AdamW
 weight_decay: 0.01
 warmup_ratio: 0.1
+max_grad_norm: 1.0
+patience: 2
+use_fp16: true
 random_seed: 68
 
 # 试跑时改小数据量（null 表示用全量；正式训练必须为 null）
@@ -16,6 +19,7 @@ max_train_samples: null
 max_val_samples: null
 
 # 路径相对 sentiment-ai 根目录
+# 划分请优先基于 data/processed/bert_train_clean.csv
 processed_dir: data/processed
 output_dir: artifacts/bert
 metrics_file: artifacts/bert/metrics.json

@@ -1,3 +1,6 @@
+"""菜单权限查询与缓存。"""
+
+# 1.导包
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import text

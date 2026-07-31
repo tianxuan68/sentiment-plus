@@ -1,13 +1,12 @@
 """启动后后台探测/重连数据库（避免阻塞 uvicorn 启动）。"""
-from __future__ import annotations
 
-import logging
+# 1.导包
 import threading
 import time
 
 from app.core.config import settings
 
-logger = logging.getLogger(__name__)
+# 2.数据库就绪标志
 _db_ready = threading.Event()
 
 
@@ -37,15 +36,15 @@ def start_background_db_connect() -> None:
             try:
                 elapsed = ping_db(retries=1)
                 mark_db_ready()
-                logger.info("数据库连接成功（后台第 %s 次尝试），耗时 %.2fs", index, elapsed)
+                print(f'数据库连接成功（后台第 {index} 次尝试），耗时 {elapsed:.2f}s')
                 return
             except Exception as exc:
-                logger.warning("数据库后台连接第 %s/%s 次失败: %s", index, len(delays), exc)
+                print(f'数据库后台连接第 {index}/{len(delays)} 次失败：{exc}')
 
         mark_db_not_ready()
-        logger.error(
-            "数据库多次连接失败。请检查远程 MySQL 网络/白名单，"
-            "或在 .env 改用本地 MySQL：DATABASE_URL=mysql+pymysql://root:密码@127.0.0.1:3306/jeecg-boot?charset=utf8mb4"
+        print(
+            '数据库多次连接失败。请检查远程 MySQL 网络/白名单，'
+            '或在 .env 改用本地 MySQL：DATABASE_URL=mysql+pymysql://root:密码@127.0.0.1:3306/jeecg-boot?charset=utf8mb4'
         )
 
     threading.Thread(target=_worker, name="db-background-connect", daemon=True).start()

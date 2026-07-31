@@ -1,6 +1,6 @@
 """轻量 TTL 内存缓存（无第三方依赖）。"""
-from __future__ import annotations
 
+# 1.导包
 import threading
 import time
 from typing import Generic, Hashable, Optional, TypeVar

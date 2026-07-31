@@ -1,6 +1,6 @@
 """第三方登录临时状态缓存（无 Redis 时的内存实现）。"""
-from __future__ import annotations
 
+# 1.导包
 import secrets
 import time
 from typing import Any, Dict, Optional, Tuple

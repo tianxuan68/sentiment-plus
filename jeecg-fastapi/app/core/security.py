@@ -1,3 +1,6 @@
+"""密码加解密、JWT Token 与工具函数。"""
+
+# 1.导包
 import base64
 import hashlib
 import re
@@ -9,13 +12,14 @@ from jose import jwt
 
 from app.core.config import settings
 
+# 2.AES 传输密钥（与前端 encryptPasswordForTransmit 一致）
 AES_KEY = b"1234567890adbcde"
 AES_IV = b"1234567890hjlkew"
 _AES_CIPHER_RE = re.compile(r"^[A-Za-z0-9+/]+=*$")
 
 
+# 3.密码统一规范（登录 / 注册 / 改密 必须一致）
 # ---------------------------------------------------------------------------
-# 密码统一规范（登录 / 注册 / 改密 必须一致）
 # 1. 前端传输：encryptPasswordForTransmit(明文) → AES-CBC Base64
 # 2. 后端入口：parse_client_password(密文) → 明文
 # 3. 数据库存储：hash_password(明文, username, salt) → JeecgBoot PBE 哈希

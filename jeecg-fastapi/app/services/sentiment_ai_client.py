@@ -1,15 +1,15 @@
-"""sentiment-ai 客户端：Mock 可演示，关闭 Mock 后并行转发真实推理。"""
-from __future__ import annotations
-
+"""
+sentiment-ai 客户端：Mock 可演示，关闭 Mock 后并行转发真实推理
+对齐教学风格：Config + 编号步骤 + print；HTTP 契约不变
+"""
+# 1.导包
 import asyncio
-import logging
 import re
 import time
 from typing import Any
 
 import httpx
 
-from app.core.config import settings
 from app.schemas.review import (
     AiStatusResult,
     AnalyzeResult,
@@ -31,21 +31,31 @@ from app.schemas.review import (
     TrendPoint,
 )
 
-logger = logging.getLogger(__name__)
+#  1.提前创建配置
+class Config:
+    def __init__(self):
+        from app.core.config import settings
+        self.base_url = settings.sentiment_ai_base_url
+        self.mock = settings.sentiment_ai_mock
+        self.timeout = settings.sentiment_ai_timeout
+        self.aspect_hints = ('质量', '价格', '物流', '包装', '服务', '外观', '性价比', '续航')
+        self.text_preview_len = 48
+        self.id2class = {0: '负向', 1: '正向'}
 
-_ASPECT_HINTS = ("质量", "价格", "物流", "包装", "服务", "外观", "性价比", "续航")
-_TEXT_PREVIEW_LEN = 48
+
+config = Config()
 
 
+# 2.Mock 数据与工具函数
 def _label_text(label: int) -> str:
-    return "正向" if label == 1 else "负向"
+    return config.id2class.get(label, str(label))
 
 
 def _text_preview(text: str) -> str:
     compact = text.strip().replace("\n", " ")
-    if len(compact) <= _TEXT_PREVIEW_LEN:
+    if len(compact) <= config.text_preview_len:
         return compact
-    return compact[: _TEXT_PREVIEW_LEN - 1] + "…"
+    return compact[: config.text_preview_len - 1] + "…"
 
 
 def _extract_entities(text: str, aspects: list[AspectItem]) -> list[AspectEntity]:
@@ -87,7 +97,7 @@ def _mock_analyze(text: str, top_n: int) -> AnalyzeResult:
     ]
 
     aspects: list[AspectItem] = []
-    for aspect in _ASPECT_HINTS:
+    for aspect in config.aspect_hints:
         if aspect in text:
             pol = 0 if is_neg and aspect in ("包装", "价格", "物流") else (0 if is_neg else 1)
             if "很快" in text and aspect == "物流":
@@ -264,6 +274,7 @@ def _mock_rating_distribution() -> RatingDistribution:
     )
 
 
+# 4.真实转发
 def _unwrap_ai(payload: dict[str, Any]) -> dict[str, Any]:
     """兼容 sentiment-ai `{code:0, result}` 与直接 result 字典。"""
     if not isinstance(payload, dict):
@@ -275,21 +286,21 @@ def _unwrap_ai(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 async def _post_ai(client: httpx.AsyncClient, path: str, body: dict[str, Any]) -> dict[str, Any]:
-    url = f"{settings.sentiment_ai_base_url.rstrip('/')}{path}"
+    url = f"{config.base_url.rstrip('/')}{path}"
     resp = await client.post(url, json=body)
     resp.raise_for_status()
     return _unwrap_ai(resp.json())
 
 
 async def _real_analyze(text: str, top_n: int) -> AnalyzeResult:
-    timeout = httpx.Timeout(settings.sentiment_ai_timeout)
+    timeout = httpx.Timeout(config.timeout)
     async with httpx.AsyncClient(timeout=timeout) as client:
         sent_task = _post_ai(client, "/api/v1/sentiment/predict", {"text": text})
         kw_task = _post_ai(client, "/api/v1/keywords/extract", {"text": text, "top_n": top_n})
         aspect_task = _post_ai(
             client,
             "/api/v1/aspect/predict",
-            {"text": text, "aspects": list(_ASPECT_HINTS)},
+            {"text": text, "aspects": list(config.aspect_hints)},
         )
         sent_raw, kw_raw, aspect_raw = await asyncio.gather(sent_task, kw_task, aspect_task)
 
@@ -331,9 +342,11 @@ async def _real_analyze(text: str, top_n: int) -> AnalyzeResult:
     )
 
 
+# 5.对外 API
 async def analyze_review(text: str, top_n: int = 5) -> AnalyzeResult:
+    # ：单条分析（Mock 或转发 sentiment-ai）
     started = time.perf_counter()
-    if settings.sentiment_ai_mock:
+    if config.mock:
         result = _mock_analyze(text, top_n)
         result.latency_ms = round((time.perf_counter() - started) * 1000, 1)
         return result
@@ -342,7 +355,7 @@ async def analyze_review(text: str, top_n: int = 5) -> AnalyzeResult:
         result.latency_ms = round((time.perf_counter() - started) * 1000, 1)
         return result
     except Exception as exc:
-        logger.warning("sentiment-ai analyze failed, fallback mock: %s", exc)
+        print(f'sentiment-ai analyze 失败，回退 Mock：{exc}')
         result = _mock_analyze(text, top_n)
         result.source = "mock_fallback"
         result.latency_ms = round((time.perf_counter() - started) * 1000, 1)
@@ -362,29 +375,29 @@ async def analyze_batch(texts: list[str], top_n: int = 5) -> BatchAnalyzeResult:
 
 
 async def get_polarity_stats() -> PolarityStat:
-    if settings.sentiment_ai_mock:
+    if config.mock:
         return _mock_polarity()
     # 统计岗交付前：真实模式也先返回稳定 Mock
     return _mock_polarity()
 
 
 async def get_trend_stats() -> list[TrendPoint]:
-    if settings.sentiment_ai_mock:
+    if config.mock:
         return _mock_trend()
     return _mock_trend()
 
 
 async def get_dashboard_summary() -> DashboardSummary:
-    if settings.sentiment_ai_mock:
+    if config.mock:
         return _mock_dashboard_summary()
     return _mock_dashboard_summary()
 
 
 async def get_pros_cons() -> ProsConsResult:
-    if settings.sentiment_ai_mock:
+    if config.mock:
         return _mock_pros_cons()
     try:
-        timeout = httpx.Timeout(settings.sentiment_ai_timeout)
+        timeout = httpx.Timeout(config.timeout)
         async with httpx.AsyncClient(timeout=timeout) as client:
             raw = await _post_ai(client, "/api/v1/pros_cons/extract", {})
         pros = [
@@ -400,17 +413,17 @@ async def get_pros_cons() -> ProsConsResult:
         if pros or cons:
             return ProsConsResult(pros=pros[:10], cons=cons[:10], source="ai")
     except Exception as exc:
-        logger.warning("sentiment-ai pros_cons failed, fallback mock: %s", exc)
+        print(f'sentiment-ai pros_cons 失败，回退 Mock：{exc}')
     result = _mock_pros_cons()
     result.source = "mock_fallback"
     return result
 
 
 async def get_model_compare() -> ModelCompareResult:
-    if settings.sentiment_ai_mock:
+    if config.mock:
         return _mock_model_compare()
     try:
-        timeout = httpx.Timeout(settings.sentiment_ai_timeout)
+        timeout = httpx.Timeout(config.timeout)
         async with httpx.AsyncClient(timeout=timeout) as client:
             raw = await _post_ai(client, "/api/v1/sentiment/models/compare", {})
         metrics_raw = raw.get("metrics") or []
@@ -434,7 +447,7 @@ async def get_model_compare() -> ModelCompareResult:
                 source="ai",
             )
     except Exception as exc:
-        logger.warning("sentiment-ai model compare failed, fallback mock: %s", exc)
+        print(f'sentiment-ai model compare 失败，回退 Mock：{exc}')
     result = _mock_model_compare()
     result.source = "mock_fallback"
     return result
@@ -450,10 +463,10 @@ async def compare_keywords(text: str, top_n: int = 8) -> KeywordCompareResult:
             keybert_unique_count=0,
             source="mock",
         )
-    if settings.sentiment_ai_mock:
+    if config.mock:
         return _mock_keyword_compare(cleaned, top_n)
     try:
-        timeout = httpx.Timeout(settings.sentiment_ai_timeout)
+        timeout = httpx.Timeout(config.timeout)
         async with httpx.AsyncClient(timeout=timeout) as client:
             raw = await _post_ai(
                 client,
@@ -489,17 +502,17 @@ async def compare_keywords(text: str, top_n: int = 8) -> KeywordCompareResult:
                 source="ai",
             )
     except Exception as exc:
-        logger.warning("sentiment-ai keyword compare failed, fallback mock: %s", exc)
+        print(f'sentiment-ai keyword compare 失败，回退 Mock：{exc}')
     result = _mock_keyword_compare(cleaned, top_n)
     result.source = "mock_fallback"
     return result
 
 
 async def get_rating_distribution() -> RatingDistribution:
-    if settings.sentiment_ai_mock:
+    if config.mock:
         return _mock_rating_distribution()
     try:
-        timeout = httpx.Timeout(settings.sentiment_ai_timeout)
+        timeout = httpx.Timeout(config.timeout)
         async with httpx.AsyncClient(timeout=timeout) as client:
             raw = await _post_ai(client, "/api/v1/analytics/rating_distribution", {})
         buckets_raw = raw.get("buckets") or []
@@ -520,15 +533,15 @@ async def get_rating_distribution() -> RatingDistribution:
                 source="ai",
             )
     except Exception as exc:
-        logger.warning("sentiment-ai rating distribution failed, fallback mock: %s", exc)
+        print(f'sentiment-ai rating distribution 失败，回退 Mock：{exc}')
     result = _mock_rating_distribution()
     result.source = "mock_fallback"
     return result
 
 
 async def get_ai_status() -> AiStatusResult:
-    mock_enabled = settings.sentiment_ai_mock
-    base_url = settings.sentiment_ai_base_url.rstrip("/")
+    mock_enabled = config.mock
+    base_url = config.base_url.rstrip("/")
     if mock_enabled:
         return AiStatusResult(
             mock_enabled=True,
@@ -539,7 +552,7 @@ async def get_ai_status() -> AiStatusResult:
 
     started = time.perf_counter()
     try:
-        timeout = httpx.Timeout(min(settings.sentiment_ai_timeout, 2.0))
+        timeout = httpx.Timeout(min(config.timeout, 2.0))
         async with httpx.AsyncClient(timeout=timeout) as client:
             resp = await client.get(f"{base_url}/health")
             resp.raise_for_status()
@@ -554,7 +567,7 @@ async def get_ai_status() -> AiStatusResult:
                 mode="live" if ok else "degraded",
             )
     except Exception as exc:
-        logger.warning("sentiment-ai health check failed: %s", exc)
+        print(f'sentiment-ai 健康检查失败：{exc}')
         return AiStatusResult(
             mock_enabled=False,
             ai_base_url=base_url,

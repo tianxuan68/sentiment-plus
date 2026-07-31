@@ -1,7 +1,6 @@
 """手机短信验证码缓存（MySQL 持久化，避免内存缓存随重启/多进程丢失）。"""
-from __future__ import annotations
 
-import logging
+# 1.导包
 import re
 from datetime import datetime, timedelta
 from typing import Optional
@@ -11,8 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
 
-logger = logging.getLogger(__name__)
-
+# 2.缓存常量
 PHONE_CAPTCHA_PREFIX = "phone_captcha:"
 CAPTCHA_TTL_SECONDS = 300
 _CAPTCHA_TTL = CAPTCHA_TTL_SECONDS
@@ -88,7 +86,7 @@ def store_phone_captcha(mobile: str, code: str, ttl: int = _CAPTCHA_TTL) -> None
             {"key": key, "val": value, "exp": expire},
         )
         db.commit()
-        logger.info("SMS captcha stored mobile=%s****%s", phone[:3], phone[-4:])
+        print(f'短信验证码已写入缓存：mobile={phone[:3]}****{phone[-4:]}')
     finally:
         db.close()
 
@@ -122,11 +120,8 @@ def validate_phone_captcha(mobile: str, captcha: str) -> bool:
     input_code = str(captcha).strip()
     ok = cached is not None and cached == input_code
     if not ok:
-        logger.warning(
-            "SMS captcha mismatch mobile=%s cached=%s input=%s",
-            normalize_mobile(mobile),
-            cached,
-            input_code,
+        print(
+            f'短信验证码不匹配：mobile={normalize_mobile(mobile)} cached={cached} input={input_code}'
         )
     return ok
 

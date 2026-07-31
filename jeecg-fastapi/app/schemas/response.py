@@ -1,3 +1,6 @@
+"""统一 API 响应结构。"""
+
+# 1.导包
 from typing import Any, Generic, Optional, TypeVar
 
 from pydantic import BaseModel
@@ -5,6 +8,7 @@ from pydantic import BaseModel
 T = TypeVar("T")
 
 
+# 2.通用 Result 包装
 class Result(BaseModel, Generic[T]):
     success: bool = True
     message: str = ""
@@ -21,6 +25,7 @@ class Result(BaseModel, Generic[T]):
         return Result(success=False, code=code, message=message, result=None)
 
 
+# 3.分页结果
 class PageResult(BaseModel):
     records: list[Any]
     total: int

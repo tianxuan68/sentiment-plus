@@ -57,7 +57,7 @@ export function createPermissionGuard(router: Router) {
       if (to.path === LOGIN_PATH && token) {
         const isSessionTimeout = userStore.getSessionTimeout;
         
-        //TODO vben默认写法，暂时不知目的，有问题暂时先注释掉
+        // vben默认写法，暂时不知目的，有问题暂时先注释掉
         //await userStore.afterLoginAction();
         
         try {

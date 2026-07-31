@@ -1,5 +1,6 @@
-from __future__ import annotations
+"""FastAPI 依赖：当前用户鉴权与缓存。"""
 
+# 1.导包
 from typing import Optional
 
 from fastapi import Depends, Header, HTTPException, Request
@@ -11,6 +12,7 @@ from app.core.ttl_cache import TTLCache
 from app.db.session import get_db
 from app.models.entities import SysUser
 
+# 2.鉴权缓存
 _auth_cache: TTLCache[str, SysUser] = TTLCache(
     maxsize=512,
     ttl_seconds=settings.auth_cache_ttl_seconds,

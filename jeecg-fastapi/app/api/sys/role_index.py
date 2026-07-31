@@ -1,6 +1,6 @@
 """角色默认首页配置（精简版）。"""
-from __future__ import annotations
 
+# 1.导包
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query

@@ -27,7 +27,7 @@ export function createRouter() {
     $electron.isElectron(),
   )
 
-  // TODO 【QQYUN-4517】【表单设计器】记录分享路由守卫测试
+  //  【QQYUN-4517】【表单设计器】记录分享路由守卫测试
   // @ts-ignore
   router.beforeEach(async (to, from, next) => {
     //console.group('【QQYUN-4517】beforeEach');

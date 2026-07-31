@@ -31,7 +31,7 @@ export interface IJVxeColumn extends VxeColumnProps {
   defaultValue?: any;
   // 是否禁用当前列，默认false
   disabled?: boolean;
-  // 校验规则 TODO 类型待定义
+  // 校验规则  类型待定义
   validateRules?: any;
   // 联动下一级的字段key
   linkageKey?: string;

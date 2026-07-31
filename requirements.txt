@@ -21,7 +21,7 @@ passlib==1.7.4
 pillow==12.2.0
 pyasn1==0.6.3
 pycparser==3.0
-pycryptodome==3.23.0
+pycrypme==3.23.0
 pydantic==2.13.4
 pydantic-settings==2.14.1
 pydantic_core==2.46.4

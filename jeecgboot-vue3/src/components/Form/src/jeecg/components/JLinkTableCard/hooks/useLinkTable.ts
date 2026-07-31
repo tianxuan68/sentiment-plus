@@ -15,7 +15,7 @@ function queryTableColumns(tableName, params) {
 }
 
 export function useLinkTable(props) {
-  //TODO 目前只支持查询第一页的数据，可以输入关键字搜索
+  // 目前只支持查询第一页的数据，可以输入关键字搜索
   const pageNo = ref('1');
   // 查询列
   const baseParam = ref<any>({});

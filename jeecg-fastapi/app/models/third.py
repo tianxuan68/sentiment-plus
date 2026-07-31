@@ -1,3 +1,6 @@
+"""第三方账号 ORM 实体。"""
+
+# 1.导包
 from datetime import datetime
 from typing import Optional
 

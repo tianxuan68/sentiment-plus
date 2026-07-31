@@ -85,7 +85,7 @@ export const vxeProps = () => ({
   asyncRemove: propTypes.bool.def(false),
   // 是否一直显示组件，如果为false则只有点击的时候才出现组件
   // 注：该参数不能动态修改；如果行、列字段多的情况下，会根据机器性能造成不同程度的卡顿。
-  // TODO 新版vxe-table取消了 visible 参数，导致无法实现该功能
+  //  新版vxe-table取消了 visible 参数，导致无法实现该功能
   alwaysEdit: propTypes.bool.def(false),
   // 联动配置，数组，详情配置见文档
   linkageConfig: propTypes.array.def(() => []),

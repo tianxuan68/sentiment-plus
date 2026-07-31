@@ -1,12 +1,9 @@
 """JeecgBoot 系统消息 WebSocket（精简版：维持连接 + 心跳）。"""
-from __future__ import annotations
 
-import logging
-
+# 1.导包
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-logger = logging.getLogger(__name__)
-
+# 2.路由
 router = APIRouter(tags=["WebSocket"])
 
 
@@ -15,7 +12,7 @@ async def system_websocket(websocket: WebSocket, user_id: str):
     subprotocols = websocket.scope.get("subprotocols") or []
     subprotocol = subprotocols[0] if subprotocols else None
     await websocket.accept(subprotocol=subprotocol)
-    logger.debug("WebSocket connected: %s", user_id)
+    print(f'WebSocket 已连接：{user_id}')
     try:
         while True:
             data = await websocket.receive_text()
@@ -23,6 +20,6 @@ async def system_websocket(websocket: WebSocket, user_id: str):
             if data == "ping":
                 await websocket.send_text("ping")
     except WebSocketDisconnect:
-        logger.debug("WebSocket disconnected: %s", user_id)
+        print(f'WebSocket 已断开：{user_id}')
     except Exception as exc:
-        logger.debug("WebSocket closed (%s): %s", user_id, exc)
+        print(f'WebSocket 关闭（{user_id}）：{exc}')

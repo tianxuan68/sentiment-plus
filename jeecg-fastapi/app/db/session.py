@@ -1,6 +1,6 @@
-from __future__ import annotations
+"""数据库 Session 与连接池管理。"""
 
-import logging
+# 1.导包
 import time
 from typing import Optional
 
@@ -10,9 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 
-logger = logging.getLogger(__name__)
-
-# 远程 MySQL 常在 wait_timeout 后断开；定期回收避免拿到死连接
+# 2.连接池参数（远程 MySQL 常在 wait_timeout 后断开；定期回收避免拿到死连接）
 _POOL_RECYCLE_SECONDS = 1800
 
 
@@ -32,6 +30,7 @@ def _build_engine():
     )
 
 
+# 3.全局引擎与 Session 工厂
 engine = _build_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -51,7 +50,7 @@ def _open_session():
         except OperationalError as exc:
             last_exc = exc
             db.close()
-            logger.warning("获取数据库连接失败（%s/%s）: %s", attempt, max_attempts, exc)
+            print(f'获取数据库连接失败（{attempt}/{max_attempts}）：{exc}')
             if attempt < max_attempts:
                 time.sleep(settings.db_connect_retry_delay * attempt)
         except Exception:
@@ -75,12 +74,12 @@ def ping_db(*, retries: Optional[int] = None, delay: Optional[float] = None) -> 
             return time.perf_counter() - started
         except OperationalError as exc:
             last_exc = exc
-            logger.warning("数据库连接失败（第 %s/%s 次）: %s", attempt, max_attempts, exc)
+            print(f'数据库连接失败（第 {attempt}/{max_attempts} 次）：{exc}')
             if attempt < max_attempts:
                 time.sleep(wait * attempt)
         except Exception as exc:
             last_exc = exc
-            logger.warning("数据库连接失败（第 %s/%s 次）: %s", attempt, max_attempts, exc)
+            print(f'数据库连接失败（第 {attempt}/{max_attempts} 次）：{exc}')
             if attempt < max_attempts:
                 time.sleep(wait * attempt)
 
@@ -114,12 +113,8 @@ def warmup_db_pool() -> float:
                     conns.append(conn)
                     break
                 except OperationalError as exc:
-                    logger.warning(
-                        "连接池预热 %s/%s 失败（第 %s 次）: %s",
-                        i + 1,
-                        warmup_count,
-                        attempt,
-                        exc,
+                    print(
+                        f'连接池预热 {i + 1}/{warmup_count} 失败（第 {attempt} 次）：{exc}'
                     )
                     if attempt >= settings.db_connect_retries:
                         raise

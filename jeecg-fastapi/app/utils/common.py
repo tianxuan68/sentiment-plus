@@ -1,3 +1,6 @@
+"""通用工具：ID 生成、ORM 转 dict、分页。"""
+
+# 1.导包
 import uuid
 from datetime import datetime
 from typing import Any, Dict, Optional

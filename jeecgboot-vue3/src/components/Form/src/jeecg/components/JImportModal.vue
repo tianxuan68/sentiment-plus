@@ -128,7 +128,7 @@
         });
         uploading.value = true;
 
-        //TODO 请求怎样处理的问题
+        // 请求怎样处理的问题
         let headers = {
           'Content-Type': 'multipart/form-data;boundary = ' + new Date().getTime(),
         };

@@ -85,7 +85,7 @@ export function useTray(tray: Tray, win: BrowserWindow) {
   function sendDesktopNotice() {
     // 判断是否支持桌面通知
     if (!Notification.isSupported()) {
-      // todo 实际开发中不需要提示，直接返回或者换一种提示方式
+      //  实际开发中不需要提示，直接返回或者换一种提示方式
       dialog.showMessageBoxSync(win, {
         type: 'error',
         title: '错误',

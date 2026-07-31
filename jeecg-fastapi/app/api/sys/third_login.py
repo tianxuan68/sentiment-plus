@@ -1,6 +1,6 @@
 """第三方登录 API（兼容 JeecgBoot Vue3 前端）。"""
-from __future__ import annotations
 
+# 1.导包
 import json
 from typing import Any, Optional
 

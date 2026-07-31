@@ -1,12 +1,10 @@
-"""BIO + polarity 双标注：读抽样池、半自动标注、导出中间结构。"""
+"""
+BIO + polarity 双标注：读抽样池、半自动标注
+"""
 
-from __future__ import annotations
-
+# 1.导包
 import csv
-import json
-import re
 from pathlib import Path
-from typing import Iterable
 
 import jieba
 
@@ -19,32 +17,41 @@ from pipelines.aspect_ner.constants import (
     polarity_text,
 )
 
-ROOT = Path(__file__).resolve().parents[2]
+
+# 2.配置类
+class Config:
+    def __init__(self):
+        self.root_path = str(Path(__file__).resolve().parents[2]).replace('\\', '/') + '/'
+        self.pool_path = self.root_path + 'data/samples/aspect_annotate_pool.csv'
 
 
-def load_annotation_pool(
-    path: str | Path = "data/samples/aspect_annotate_pool.csv",
-) -> list[dict]:
-    """上游: 杨国东 sample_for_annotation()；列 id, sentence。"""
-    csv_path = ROOT / path if not Path(path).is_absolute() else Path(path)
+config = Config()
+
+
+def load_annotation_pool(path=None):
+    # 3.加载标注池（上游：杨国东抽样）
+    csv_path = Path(path) if path else Path(config.pool_path)
+    if not csv_path.is_absolute():
+        csv_path = Path(config.root_path) / csv_path
     if not csv_path.exists():
-        raise FileNotFoundError(f"标注池不存在: {csv_path}，请先运行 scripts/build_aspect_annotate_pool.py")
+        raise FileNotFoundError(f'标注池不存在：{csv_path}，请先运行 scripts/build_aspect_annotate_pool.py')
 
-    rows: list[dict] = []
-    with csv_path.open("r", encoding="utf-8", newline="") as f:
+    rows = []
+    with csv_path.open('r', encoding='utf-8', newline='') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            sentence = (row.get("sentence") or "").strip()
+            sentence = (row.get('sentence') or '').strip()
             if not sentence:
                 continue
-            rows.append({"id": str(row.get("id", len(rows))), "sentence": sentence})
+            rows.append({'id': str(row.get('id', len(rows))), 'sentence': sentence})
+    print(f'标注池条数：{len(rows)}')
     return rows
 
 
-def find_aspect_spans(sentence: str) -> list[tuple[int, int, str]]:
-    """在句中找属性触发词 span。返回 [(start, end, aspect_type), ...]。"""
-    spans: list[tuple[int, int, str]] = []
-    seen: set[tuple[int, int]] = set()
+def find_aspect_spans(sentence):
+    # 在句中找属性触发词 span -> [(start, end, aspect_type), ...]
+    spans = []
+    seen = set()
     for aspect in ASPECT_TYPES:
         for kw in ASPECT_KEYWORDS.get(aspect, (aspect,)):
             start = 0
@@ -60,13 +67,13 @@ def find_aspect_spans(sentence: str) -> list[tuple[int, int, str]]:
     return sorted(spans, key=lambda x: x[0])
 
 
-def infer_polarity(sentence: str, aspect: str, sentence_label: int | None = None) -> int:
-    """方面极性：局部上下文 + 句级 label 兜底。"""
+def infer_polarity(sentence, aspect, sentence_label=None):
+    # 方面极性：局部上下文 + 句级 label 兜底
     window = sentence
     for kw in ASPECT_KEYWORDS.get(aspect, (aspect,)):
         pos = sentence.find(kw)
         if pos >= 0:
-            window = sentence[max(0, pos - 8) : pos + len(kw) + 8]
+            window = sentence[max(0, pos - 8): pos + len(kw) + 8]
             break
     if any(h in window for h in NEG_HINTS):
         return 0
@@ -77,18 +84,18 @@ def infer_polarity(sentence: str, aspect: str, sentence_label: int | None = None
     return 1
 
 
-def tokenize_sentence(sentence: str) -> list[str]:
+def tokenize_sentence(sentence):
     return [t for t in jieba.lcut(sentence.strip()) if t.strip()]
 
 
-def spans_to_token_labels(tokens: list[str], spans: list[tuple[int, int, str]], sentence: str) -> list[str]:
-    """字符 span 对齐到 jieba 词级 BIO。"""
+def spans_to_token_labels(tokens, spans, sentence):
+    # 字符 span 对齐到 jieba 词级 BIO
     labels = [BIO_LABEL_O] * len(tokens)
     if not tokens:
         return labels
 
     cursor = 0
-    token_spans: list[tuple[int, int]] = []
+    token_spans = []
     for tok in tokens:
         idx = sentence.find(tok, cursor)
         if idx < 0:
@@ -101,65 +108,66 @@ def spans_to_token_labels(tokens: list[str], spans: list[tuple[int, int, str]], 
         for i, (ts, te) in enumerate(token_spans):
             if te <= start or ts >= end:
                 continue
-            labels[i] = f"B-{aspect}" if first else f"I-{aspect}"
+            labels[i] = f'B-{aspect}' if first else f'I-{aspect}'
             first = False
     return labels
 
 
-def annotate_bio(
-    record_id: str,
-    sentence: str,
-    aspect_spans: list[tuple[int, int, str]] | None = None,
-    sentence_label: int | None = None,
-) -> dict:
-    """单句 BIO 标注 + 方面情感行。"""
+def annotate_bio(record_id, sentence, aspect_spans=None, sentence_label=None):
+    # 单句 BIO 标注 + 方面情感行
     spans = aspect_spans if aspect_spans is not None else find_aspect_spans(sentence)
     tokens = tokenize_sentence(sentence)
     labels = spans_to_token_labels(tokens, spans, sentence)
 
-    sentiment_rows: list[dict] = []
-    aspects_in_span: set[str] = set()
+    sentiment_rows = []
+    aspects_in_span = set()
     for _s, _e, aspect in spans:
         if aspect in aspects_in_span:
             continue
         aspects_in_span.add(aspect)
         pol = infer_polarity(sentence, aspect, sentence_label)
-        sentiment_rows.append(
-            {
-                "id": record_id,
-                "sentence": sentence,
-                "aspect": aspect,
-                "polarity": pol,
-                "polarity_text": polarity_text(pol),
-                "aspect_span": f"{_s}:{_e}",
-            }
-        )
+        sentiment_rows.append({
+            'id': record_id,
+            'sentence': sentence,
+            'aspect': aspect,
+            'polarity': pol,
+            'polarity_text': polarity_text(pol),
+            'aspect_span': f'{_s}:{_e}',
+        })
 
     return {
-        "id": record_id,
-        "sentence": sentence,
-        "tokens": tokens,
-        "labels": labels,
-        "sentiment_rows": sentiment_rows,
+        'id': record_id,
+        'sentence': sentence,
+        'tokens': tokens,
+        'labels': labels,
+        'sentiment_rows': sentiment_rows,
     }
 
 
-def build_annotations_from_pool(
-    pool: Iterable[dict],
-    labels_by_id: dict[str, int] | None = None,
-) -> tuple[list[dict], list[dict]]:
-    """批量标注。返回 (ner_records, sentiment_records)。"""
-    ner_records: list[dict] = []
-    sentiment_records: list[dict] = []
+def build_annotations_from_pool(pool, labels_by_id=None):
+    # 批量标注 -> (ner_records, sentiment_records)
+    ner_records = []
+    sentiment_records = []
     labels_by_id = labels_by_id or {}
 
     for item in pool:
-        rid = str(item["id"])
-        sentence = item["sentence"]
+        rid = str(item['id'])
+        sentence = item['sentence']
         rec = annotate_bio(rid, sentence, sentence_label=labels_by_id.get(rid))
-        ner_records.append(
-            {"id": rec["id"], "tokens": rec["tokens"], "labels": rec["labels"], "sentence": rec["sentence"]}
-        )
-        sentiment_records.extend(rec["sentiment_rows"])
+        ner_records.append({
+            'id': rec['id'],
+            'tokens': rec['tokens'],
+            'labels': rec['labels'],
+            'sentence': rec['sentence'],
+        })
+        sentiment_records.extend(rec['sentiment_rows'])
 
+    print(f'NER 记录：{len(ner_records)}，情感行：{len(sentiment_records)}')
     return ner_records, sentiment_records
+
+
+if __name__ == '__main__':
+    demo = annotate_bio('1', '物流很快，包装简陋', sentence_label=1)
+    print(f'tokens：{demo["tokens"]}')
+    print(f'labels：{demo["labels"]}')
+    print(f'sentiment_rows：{demo["sentiment_rows"]}')

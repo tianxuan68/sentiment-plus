@@ -1,3 +1,6 @@
+"""部门请求体。"""
+
+# 1.导包
 from typing import Optional
 
 from pydantic import BaseModel

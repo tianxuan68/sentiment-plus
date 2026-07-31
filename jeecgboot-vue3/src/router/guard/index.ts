@@ -68,7 +68,7 @@ function createPageLoadingGuard(router: Router) {
   });
   router.afterEach(async () => {
     if (unref(getOpenPageLoading)) {
-      // TODO Looking for a better way
+      //  Looking for a better way
       // The timer simulates the loading time to prevent flashing too fast,
       setTimeout(() => {
         appStore.setPageLoading(false);

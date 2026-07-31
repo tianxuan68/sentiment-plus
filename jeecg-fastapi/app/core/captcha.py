@@ -1,3 +1,6 @@
+"""图形验证码生成与校验。"""
+
+# 1.导包
 import io
 import random
 import string

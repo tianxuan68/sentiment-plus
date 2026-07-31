@@ -1,6 +1,6 @@
 """第三方 OAuth 提供商封装。"""
-from __future__ import annotations
 
+# 1.导包
 import secrets
 import urllib.parse
 from dataclasses import dataclass

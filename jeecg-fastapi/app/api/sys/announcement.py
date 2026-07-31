@@ -1,6 +1,6 @@
 """系统通知（精简版）。"""
-from __future__ import annotations
 
+# 1.导包
 from fastapi import APIRouter, Query
 
 from app.schemas.response import Result

@@ -141,7 +141,7 @@ export function useJVxeComponent(props: JVxeComponent.Props) {
     value,
     (newValue) => {
       // -update-begin--author:liaozhiyang---date:20241210---for：【issues/7497】隐藏某一列后，字典没翻译，恢复后正常
-      // TODO 先这样修复解决问题，根因后期再看看
+      //  先这样修复解决问题，根因后期再看看
       // enhanced = getEnhanced(props.type);
       // -update-end--author:liaozhiyang---date:20241210---for：【issues/7497】隐藏某一列后，字典没翻译，恢复后
       // 解决online中对同一条数据点击编辑多次他表字段变成空格的问题

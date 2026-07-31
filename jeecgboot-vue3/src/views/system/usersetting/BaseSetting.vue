@@ -126,7 +126,7 @@ import { getToken } from "@/utils/auth";
 import { uploadUrl } from "@/api/common/api";
 import { UploadOutlined } from "@ant-design/icons-vue";
 
-//TODO 当字典租户隔离时，数据会查不到，默认一个
+// 当字典租户隔离时，数据会查不到，默认一个
 const sexOption = getDictItemsByCode("sex") || [{text:'男',value:'1'},{text:'女',value:'2'}];
 const { createMessage } = useMessage();
 const userStore = useUserStore();

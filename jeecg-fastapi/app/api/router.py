@@ -1,3 +1,6 @@
+"""系统 API 路由汇总。"""
+
+# 1.导包
 from fastapi import APIRouter
 
 from app.api.sys.announcement import router as announcement_router
@@ -16,6 +19,7 @@ from app.api.sys.third_login import router as third_login_router
 from app.api.sys.third_user import router as third_user_router
 from app.api.sys.user import router as user_router
 
+# 2.注册各子模块路由
 sys_router = APIRouter()
 sys_router.include_router(login_router)
 sys_router.include_router(dashboard_router)
