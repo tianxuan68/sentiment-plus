@@ -1,11 +1,13 @@
 # =============================================================================
 # Sentiment-Plus 统一依赖（仓库根目录）
-# 覆盖：jeecg-fastapi 后端 + sentiment-ai 推理 / 训练 / KeyBERT / NER
+# 覆盖：jeecg-fastapi 后端 + sentiment-ai 1.0 / 2.0 推理与训练
 # Python：3.11+（本文件已在 3.12 上多次 pip 解析通过）
 # 安装：pip install -r requirements.txt
 # GPU 版 torch（可选，覆盖 CPU 轮子）：
 #   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 # =============================================================================
+
+# AI 1.0 = sentiment-ai/（好评差评）；AI 2.0 = sentiment-ai-2.0/（多标签骨架，依赖同此文件）
 
 # --- 后端 / FastAPI（jeecg-fastapi）---
 annotated-doc==0.0.4

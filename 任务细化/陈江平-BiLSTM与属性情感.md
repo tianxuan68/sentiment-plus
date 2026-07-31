@@ -1,150 +1,117 @@
-# 陈江平 · BiLSTM 情感 + 属性情感 · 任务细化
+# 陈江平 · BiLSTM 情感 + 属性情感（手把手）
 
-> 对齐主设计：商品评论情感分类（BiLSTM）+ 商品属性情感分析  
-> 情感对比链：**Baseline → BiLSTM → BERT**（三模型，不含 CNN）  
-> 全局约定见：[00-总览与全局约定.md](./00-总览与全局约定.md)
+> 你有两件事：① 整句情感 BiLSTM（对比链第 2 环）；② 属性级情感。  
+> 情感对比链：**Baseline → 你(BiLSTM) → BERT**  
+> 详细字段：见 [01-函数接口对照表.md](./01-函数接口对照表.md)
 
-------------------------------------------------------------------------
+---
 
-# 一、岗位速览
+## 1. 你在整条链上的位置
 
-| 项 | 内容 |
-| -- | ---- |
-| **人员** | 陈江平 |
-| **主责** | BiLSTM 情感 + 属性情感；相对 Baseline「+2% F1」 |
-| **目录** | `pipelines/sentiment/bilstm/`；`pipelines/aspect_sentiment/bilstm/` |
-| **使用技术** | PyTorch、Embedding、BiLSTM、Attention |
-| **路演目录** | `sentiment-ai/pitch_assets/chen_jiangping/` |
+```
+刘攀 clean + 共用 splits
+毛鑫泽 baseline_metrics.json（你要超过他的 F1）
+        ↓
+【你·A】BiLSTM+Attention 整句情感
+        ↓
+   指标交给胡潇潇画三模型图
 
-------------------------------------------------------------------------
-
-# 二、任务 A · BiLSTM 上下文语义建模（情感）
-
-| 项 | 内容 |
-| -- | ---- |
-| **验收标准** | ①双向语义建模；②F1≥0.88；③相对 Baseline 的 F1 提升≥2%；④完成 Baseline/BiLSTM 对比 |
-
-## 2.1 输入
-
-- 同一 `splits/` + `clean_train.csv` / `sentence`
-- 毛鑫泽 `baseline_metrics.json`（写进对比报告）
-
-## 2.2 实现步骤
-
-1. **词表**：仅用训练集建 vocab；`<pad>`/`<unk>`；保存 `artifacts/sentiment/bilstm/vocab.json`。
-2. **BiLSTM+Attention**：
-   - Embedding → BiLSTM → Attention 加权 → Linear → 2 类
-   - 早停：monitor=`val_f1`，patience 建议 3～5
-3. 测试集 F1≥0.88，且 `BiLSTM_F1 − Baseline_F1 ≥ 0.02`。
-4. 导出权重 `artifacts/sentiment/bilstm/bilstm_sentiment_best.pt` + metrics。
-5. 写对比：`artifacts/metrics/compare_baseline_bilstm.json` + 路演图（标「+2% F1」）。
-
-## 2.3 产出文件
-
-| 路径 | 说明 |
-| ---- | ---- |
-| `artifacts/sentiment/bilstm/bilstm_sentiment_best.pt` | BiLSTM 情感权重 |
-| `artifacts/metrics/bilstm_sentiment_metrics.json` | BiLSTM 指标 |
-| `pitch_assets/chen_jiangping/baseline_bilstm.png` | 双模型对比图 |
-
-## 2.4 对接（情感）
-
-| 交谁 | 交什么 |
-| ---- | ------ |
-| 胡潇潇 | BiLSTM 指标，便于三模型总图 |
-| 6号 | 情感对比图 |
-
-------------------------------------------------------------------------
-
-# 三、任务 B · 属性与情感关系建模
-
-| 项 | 内容 |
-| -- | ---- |
-| **验收标准** | ①统一划分训练测试；②F1≥85%；③导出 `bilstm_aspect_best.pt` |
-
-## 3.1 输入
-
-- 5 号交付的 `data/processed/aspect_sentiment.csv`  
-  建议列：`sentence`、`aspect`、`polarity`（0/1）
-
-## 3.2 实现步骤
-
-1. 按 seed=68 对属性样本划分 train/val/test（可单独 `splits_aspect/`）。
-2. 模型：句 + 方面信息编码 → BiLSTM + Attention → 极性分类。
-3. 评估 `f1_score`；目标 **≥0.85**。
-4. 导出 **`artifacts/aspect/bilstm_aspect_best.pt`**。
-5. 【路演】F1 数字卡 + 2～3 条预测样例 PNG。
-
-## 3.3 产出文件
-
-| 路径 | 说明 |
-| ---- | ---- |
-| `artifacts/aspect/bilstm_aspect_best.pt` | 主设计指定文件名 |
-| `artifacts/metrics/bilstm_aspect_metrics.json` | F1 等 |
-| `pitch_assets/chen_jiangping/aspect_f1_card.png` | 路演 |
-
-## 3.4 对接（属性）
-
-| 交谁 | 交什么 |
-| ---- | ------ |
-| 属性 BERT（待定） | 同一 `aspect_sentiment.csv` 与划分说明 |
-| 1号 / 6号 | 指标与样例图 |
-
-------------------------------------------------------------------------
-
-# 四、函数级接口契约
-
-> 情感：`pipelines/sentiment/bilstm/`  
-> 属性：`pipelines/aspect_sentiment/bilstm/`
-
-## 4.1 情感任务函数
-
-```python
-def load_corpus(split: Literal["train","val","test"] = "train") -> tuple[list[str], list[int]]:
-    """上游: 刘攀 clean_train.csv + splits/"""
-
-def train_bilstm_sentiment(config: dict) -> dict:
-    """BiLSTM+Attention。
-    返回: { "acc", "f1", "model_path": "artifacts/sentiment/bilstm/bilstm_sentiment_best.pt" }
-    硬指标: f1 ≥ 0.88 且 f1 - baseline_f1 ≥ 0.02
-    下游: 胡潇潇 build_model_compare() 读 bilstm_sentiment_metrics.json
-    """
-
-def predict_sentiment(text: str) -> dict:
-    """单条情感推理。
-    入参: text — 评论文本
-    返回: { "label": int, "prob": float, "model": "bilstm" }
-    """
+5号 aspect_sentiment.csv
+        ↓
+【你·B】BiLSTM 属性情感
+        ↓
+   权重/接口 → 郑平高（或与属性BERT共用路径）
 ```
 
-## 4.2 属性任务函数
+---
 
-```python
-def load_aspect_dataset(
-    csv_path: str = "data/processed/aspect_sentiment.csv",
-) -> DataLoader:
-    """上游: 5号 export_aspect_sentiment()"""
+## 2. 你要完成的功能
 
-def train_bilstm_aspect(config: dict) -> dict:
-    """返回: { "f1", "model_path": "artifacts/aspect/bilstm_aspect_best.pt" }；f1≥0.85"""
+### 任务 A · 整句情感
 
-def predict_aspect(text: str, aspect: str) -> dict:
-    """返回: { "aspect", "polarity": 0|1, "polarity_text", "prob" }"""
-```
+| # | 功能 | 做到什么算完 |
+| - | ---- | ------------ |
+| 1 | BiLSTM + Attention | 双向语义建模 |
+| 2 | F1 ≥ **0.88** | 测试集 |
+| 3 | 比 Baseline F1 **+≥2%** | 写进对比 JSON |
+| 4 | 对比图 | Baseline vs BiLSTM |
 
-### HTTP（与属性 BERT 共用）
+### 任务 B · 属性情感
 
-| POST | `/api/v1/aspect/predict` | `{text, aspects[]}` → `{items: [...]}` |
+| # | 功能 | 做到什么算完 |
+| - | ---- | ------------ |
+| 1 | 属性极性分类 | 用 5 号的表训练 |
+| 2 | F1 ≥ **85%** | |
+| 3 | 导出指定文件名 | `bilstm_aspect_best.pt` |
 
-------------------------------------------------------------------------
+---
 
-# 五、交付自检
+## 3. 和谁对接
 
-| 检查项 | 达标 |
-| ------ | ---- |
-| 双向 BiLSTM+Attention 已实现 | ☐ |
-| 情感 F1≥0.88 | ☐ |
-| 相对 Baseline F1 +≥2% | ☐ |
-| Baseline/BiLSTM 对比完成 | ☐ |
+| 方向 | 找谁 | 干什么 |
+| ---- | ---- | ------ |
+| 上游清洗 | **刘攀** | `clean_train.csv` + `splits/` |
+| 上游尺子 | **毛鑫泽** | `baseline_metrics.json` 里的 best.f1 |
+| 上游属性样本 | **5号** | `aspect_sentiment.csv` |
+| 下游三模型 | **胡潇潇** | 你的情感指标 JSON |
+| 下游展示 | **郑平高** | 属性预测接口（或权重说明） |
+| 交路演图 | **6号** | 双模型对比图 + 属性 F1 卡 |
+
+---
+
+## 4. 传入 → 技术处理 → 返回
+
+### 任务 A
+
+| 阶段 | 内容 |
+| ---- | ---- |
+| **传入** | `text_clean`/`sentence` + `label`；同一 `splits/` |
+| **中间技术** | PyTorch：Embedding → BiLSTM → Attention → Linear（2 类） |
+| **返回** | `{label, prob, model:"bilstm"}`；权重 `.pt`；指标 JSON |
+
+硬指标：`f1 ≥ 0.88` 且 `f1 - baseline_f1 ≥ 0.02`
+
+### 任务 B
+
+| 阶段 | 内容 |
+| ---- | ---- |
+| **传入** | `sentence` + `aspect` + `polarity(0/1)` |
+| **中间技术** | 句+方面编码 → BiLSTM+Attention → 极性 |
+| **返回** | `{aspect, polarity, polarity_text, prob}` |
+
+**HTTP（与属性 BERT 共用路径）：**
+
+| 接口 | 传入 | 返回 |
+| ---- | ---- | ---- |
+| `POST /api/v1/aspect/predict` | `{text, aspects:["质量","物流",...]}` | `{items:[{aspect,polarity,polarity_text,prob}]}` |
+
+---
+
+## 5. 怎么做（按顺序勾）
+
+**任务 A**
+
+1. 代码：`pipelines/sentiment/bilstm/`  
+2. 只用训练集建词表，保存 `vocab.json`  
+3. 训 BiLSTM+Attention，早停看 `val_f1`  
+4. 导出 `artifacts/sentiment/bilstm/bilstm_sentiment_best.pt`  
+5. 写 `artifacts/metrics/bilstm_sentiment_metrics.json` + 对比图  
+
+**任务 B**
+
+1. 代码：`pipelines/aspect_sentiment/bilstm/`  
+2. 读 5 号 CSV，`seed=68` 划分（可单独 `splits_aspect/`）  
+3. 训到 F1≥0.85  
+4. 导出 **`artifacts/aspect/bilstm_aspect_best.pt`**（文件名固定）  
+5. 路演 F1 卡 → `pitch_assets/chen_jiangping/`
+
+---
+
+## 6. 验收打勾
+
+| 检查 | ☐ |
+| ---- | - |
+| BiLSTM+Attention 情感已实现 | ☐ |
+| 情感 F1≥0.88 且比 Baseline +≥2% | ☐ |
 | `bilstm_aspect_best.pt`；属性 F1≥85% | ☐ |
-| 路演：对比图 + 属性 F1 卡 | ☐ |
+| 指标已给胡潇潇；路演图已交 6 号 | ☐ |

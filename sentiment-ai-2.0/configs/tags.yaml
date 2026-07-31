@@ -1,0 +1,19 @@
+# 2.0 标签配置（占位）
+# 2.0-A：固定标签枚举；2.0-B：按 category_id 加载不同标签表
+
+version: "2.0.0-dev"
+mode: scaffold
+
+# 示例固定标签（实现时再定稿）
+fixed_tags:
+  - 物流快
+  - 物流慢
+  - 质量好
+  - 质量差
+  - 包装完好
+  - 包装破损
+  - 性价比高
+  - 客服满意
+
+# 动态标签：category_id -> tags（2.0-B）
+dynamic_tag_sets: {}

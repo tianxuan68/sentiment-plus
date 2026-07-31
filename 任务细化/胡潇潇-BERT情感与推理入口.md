@@ -1,108 +1,98 @@
-# 胡潇潇 · BERT 情感微调与主推理入口 · 任务细化
+# 胡潇潇 · BERT 情感 + 推理入口（手把手）
 
-> 对齐主设计：商品评论情感分类 · BERT Fine-tuning；向 1 号提供推理入口  
-> 情感对比链：**Baseline → BiLSTM → BERT**（三模型，不含 CNN）  
-> 全局约定见：[00-总览与全局约定.md](./00-总览与全局约定.md)
+> 你是对比链第 3 环（最强模型），并且要搭好 **AI 推理服务入口**，方便郑平高对接。  
+> 详细字段：见 [01-函数接口对照表.md](./01-函数接口对照表.md)
 
-------------------------------------------------------------------------
+---
 
-# 一、岗位速览
+## 1. 你在整条链上的位置
 
-| 项 | 内容 |
-| -- | ---- |
-| **人员** | 胡潇潇 |
-| **主责** | BERT 情感微调与主推理 |
-| **目录** | `pipelines/sentiment/bert/` + `app/`（推理入口） |
-| **使用技术** | PyTorch、Transformer、`bert-base-chinese` |
-| **验收标准** | ①完成 Fine-tuning；②Acc≥92%；③F1≥0.90；④优于 Baseline/BiLSTM；⑤向 1 号提供推理入口 |
-| **路演目录** | `sentiment-ai/pitch_assets/hu_xiaoxiao/` |
-
-------------------------------------------------------------------------
-
-# 二、输入
-
-- 统一划分 + `sentence`/`label`（组内固定 sentence 或 text_clean）
-- Baseline / BiLSTM 指标文件（用于证明「优于」）
-
-------------------------------------------------------------------------
-
-# 三、实现步骤（训练）
-
-1. `BertForSequenceClassification.from_pretrained('bert-base-chinese', num_labels=2)`
-2. 超参：`max_length=128`，`lr=2e-5`，`batch_size=16`，`epochs=2~4`，AdamW
-3. 验证集选优；测试集 Acc≥92%、F1≥0.90，且优于 Baseline/BiLSTM。
-4. 导出 `artifacts/sentiment/bert/best/` + `artifacts/metrics/bert_sentiment_metrics.json`
-5. 【路演】SOTA 指标卡 + **三模型**对比图 + 2～3 条样例。
-
-------------------------------------------------------------------------
-
-# 四、实现步骤（推理入口 · 交 1 号）
-
-| 方法 | 路径 | 请求体 | 响应 `result` |
-| ---- | ---- | ------ | ------------- |
-| POST | `/api/v1/sentiment/predict` | `{ "text": "..." }` | `{ "label": 0\|1, "prob": float, "model": "bert" }` |
-| POST | `/api/v1/sentiment/models/compare` | `{}` | `ModelCompareResult`（三模型） |
-| GET | `/health` | — | `{ "status": "ok" }` |
-
-------------------------------------------------------------------------
-
-# 五、函数级接口契约
-
-```python
-def train_bert(config: dict) -> dict:
-    """返回: { acc, f1, model_dir, metrics_path }；acc≥0.92, f1≥0.90"""
-
-def build_model_compare(
-    baseline_path: str = "artifacts/metrics/baseline_metrics.json",
-    bilstm_path: str = "artifacts/metrics/bilstm_sentiment_metrics.json",
-    bert_path: str = "artifacts/metrics/bert_sentiment_metrics.json",
-) -> dict:
-    """三模型对比 JSON。
-    返回: {
-        "metrics": [{model, acc, f1, owner}, ...],  # 3 条
-        "best_model": str,
-        "bilstm_vs_baseline_f1_gain": float,
-    }
-    上游: 毛鑫泽 export_best()、陈江平 train_bilstm_sentiment()
-    下游: 郑平高 get_model_compare()
-    """
-
-def predict_sentiment(text: str) -> dict:
-    """返回: { label, prob, model: "bert" }"""
-
-def create_app() -> FastAPI:
-    """注册 /health、/sentiment/predict、/sentiment/models/compare 等"""
+```
+刘攀数据 + 共用 splits
+毛鑫泽 / 陈江平 的指标 JSON
+        ↓
+【你】BERT 微调（Acc≥92%, F1≥0.90）
+        ↓
+【你】sentiment-ai/app 推理服务
+   /health
+   /api/v1/sentiment/predict
+   /api/v1/sentiment/models/compare
+        ↓
+      郑平高转发到前端页面
 ```
 
-------------------------------------------------------------------------
+**一句话**：训练出最好模型，并让 1 号「一个 Base URL」就能调通。
 
-# 六、产出文件
+---
 
-| 路径 | 说明 |
+## 2. 你要完成的功能
+
+| # | 功能 | 做到什么算完 |
+| - | ---- | ------------ |
+| 1 | BERT Fine-tuning | `bert-base-chinese`，2 分类 |
+| 2 | Acc≥**92%**，F1≥**0.90** | 且优于 Baseline、BiLSTM |
+| 3 | 三模型对比 JSON | 读毛鑫泽+陈江平指标拼出来 |
+| 4 | 推理 HTTP | predict + compare + health |
+| 5 | 路演图 | SOTA 卡 + 三模型图 |
+
+---
+
+## 3. 和谁对接
+
+| 方向 | 找谁 | 干什么 |
+| ---- | ---- | ------ |
+| 上游数据 | **刘攀** | 语料 + `splits/` |
+| 上游指标 | **毛鑫泽、陈江平** | 两份 metrics JSON |
+| 下游主对接 | **郑平高** | 给 Base URL（如 `http://127.0.0.1:8100`）+ `/docs` + curl 示例 |
+| 同 app 挂路由 | **杨国东、邓新晓、陈江平** | 关键词/优缺点/属性路由可挂你搭的 app |
+| 交路演图 | **6号** | `pitch_assets/hu_xiaoxiao/` |
+
+---
+
+## 4. 传入 → 技术处理 → 返回
+
+| 阶段 | 内容 |
 | ---- | ---- |
-| `artifacts/sentiment/bert/best/` | 微调权重 |
-| `artifacts/metrics/bert_sentiment_metrics.json` | 指标 |
-| `artifacts/metrics/compare_three_models.json` | Baseline/BiLSTM/BERT |
-| `pitch_assets/hu_xiaoxiao/sota_card.png` | SOTA 卡 |
-| `pitch_assets/hu_xiaoxiao/three_models.png` | 三模型图 |
+| **传入（训练）** | `sentence`/`text_clean` + `label` + 统一 splits |
+| **中间技术** | PyTorch + Transformers：`BertForSequenceClassification`；`max_length=128`，`lr=2e-5`，`batch=16`，`epochs=2~4`，AdamW |
+| **返回（推理）** | 见下表 |
 
-------------------------------------------------------------------------
+| 接口 | 传入 | 返回 |
+| ---- | ---- | ---- |
+| `GET /health` | 无 | `{status:"ok"}` |
+| `POST /api/v1/sentiment/predict` | `{text}` | `{label:0\|1, prob, model:"bert"}` |
+| `POST /api/v1/sentiment/models/compare` | `{}` | `{metrics:[{model,acc,f1,owner}×3], best_model, bilstm_vs_baseline_f1_gain}` |
 
-# 七、对接
+统一外壳：`{code:0, msg:"ok", result:{...}}`
 
-| 交谁 | 交什么 |
-| ---- | ------ |
-| **郑平高（1号）** | 推理 Base URL、OpenAPI、示例 curl |
-| 6号 | `pitch_assets/hu_xiaoxiao/` |
+---
 
-------------------------------------------------------------------------
+## 5. 怎么做（按顺序勾）
 
-# 八、交付自检
+1. 训练代码：`pipelines/sentiment/bert/`（可参考已有 train/evaluate/infer）  
+2. 权重导出：`artifacts/sentiment/bert/best/`  
+3. 指标：`artifacts/metrics/bert_sentiment_metrics.json`  
+4. 拼三模型：`build_model_compare()` → `compare_three_models.json`  
+5. 启动 `app/`（FastAPI），至少暴露 health + predict + compare  
+6. 给郑平高一份 curl，让他把 `.env` 里 `SENTIMENT_AI_MOCK=false` 后能通  
+7. 路演图 ≥1920 宽
 
-| 检查项 | 达标 |
-| ------ | ---- |
-| Fine-tuning 完成 | ☐ |
-| Acc≥92%；F1≥0.90 | ☐ |
-| 优于 Baseline/BiLSTM | ☐ |
-| `/api/v1/sentiment/predict` 可调 | ☐ |
-| 路演：SOTA 卡 + 三模型图 + 样例 | ☐ |
+**给郑平高的 curl 示例（你交接口时附上）：**
+
+```bash
+curl -X POST http://127.0.0.1:8100/api/v1/sentiment/predict ^
+  -H "Content-Type: application/json" ^
+  -d "{\"text\":\"物流很快，包装完好\"}"
+```
+
+---
+
+## 6. 验收打勾
+
+| 检查 | ☐ |
+| ---- | - |
+| Fine-tuning 完成；Acc≥92%；F1≥0.90 | ☐ |
+| 明确优于 Baseline / BiLSTM | ☐ |
+| `/health` 与 `/sentiment/predict` 郑平高能调 | ☐ |
+| 三模型对比可返回 | ☐ |
+| 路演：SOTA 卡 + 三模型图已交 6 号 | ☐ |

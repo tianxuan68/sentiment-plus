@@ -1,135 +1,79 @@
-# 待定 · BERT 属性级情感分类 · 任务细化
+# 待定 · BERT 属性级情感（手把手）
 
-> 对齐主设计：商品属性情感分析 · BERT 句对输入；权重交 1 号  
-> 人员补全后：改文件名/子目录为人名即可，接口约定不变。  
-> 全局约定见：[00-总览与全局约定.md](./00-总览与全局约定.md)  
-> 函数对照：[01-函数接口对照表.md](./01-函数接口对照表.md)
+> 岗位置空：人到位后改文件名即可。  
+> 你的工作 = 用 BERT **句对**做「一句评论 × 多个属性」的情感，接口交 1 号。
 
-------------------------------------------------------------------------
+---
 
-# 一、岗位速览
+## 1. 你在整条链上的位置
 
-| 项 | 内容 |
-| -- | ---- |
-| **人员** | 待定 |
-| **主责** | BERT 属性级情感 |
-| **目录** | `pipelines/aspect_sentiment/bert/` |
-| **使用技术** | `bert-base-chinese`、句对输入 |
-| **验收标准** | ①Acc≥90%；②一句多属性预测；③权重交 1 号 |
-
-------------------------------------------------------------------------
-
-# 二、输入
-
-| 来源 | 函数 / 文件 |
-| ---- | ----------- |
-| 5号 | `load_aspect_dataset()` ← `aspect_sentiment.csv` |
-
-CSV 列契约：`sentence: str`, `aspect: str`, `polarity: int` (0|1)
-
-------------------------------------------------------------------------
-
-# 三、函数级接口契约
-
-> 文件：`pipelines/aspect_sentiment/bert/train.py`、`predict.py`、`app/api/aspect.py`
-
-```python
-def load_aspect_dataset(
-    csv_path: str = "data/processed/aspect_sentiment.csv",
-    split_dir: str = "data/processed/splits_aspect/",
-) -> Dataset:
-    """上游: 5号 export_aspect_sentiment()"""
-
-def encode_sentence_aspect(sentence: str, aspect: str, max_length: int = 128) -> dict:
-    """句对编码。
-    格式: [CLS] sentence [SEP] aspect [SEP]
-    返回: { "input_ids", "attention_mask", "token_type_ids" }
-    """
-
-def train_bert_aspect(config: dict) -> dict:
-    """微调二分类。
-    返回: {
-        "acc": float,                # ≥0.90
-        "f1": float,
-        "model_dir": "artifacts/aspect/bert_aspect_best/",
-    }
-    """
-
-def predict_aspect(text: str, aspect: str) -> dict:
-    """单句单属性。
-    入参: text — 评论；aspect — 标准属性名
-    返回: {
-        "aspect": str,
-        "polarity": int,
-        "polarity_text": str,        # "正向"|"负向"
-        "prob": float,
-    }
-    """
-
-def predict_aspects(text: str, aspects: list[str]) -> list[dict]:
-    """一句多属性（主推理入口）。
-    入参:
-        text: 评论文本
-        aspects: 待测属性列表，如 ["质量","价格","物流","包装","服务"]
-    返回: list[predict_aspect 返回结构]，顺序与 aspects 一致
-    下游: 郑平高 _real_analyze() → AnalyzeResult.aspects[]
-    """
+```
+5号 aspect_sentiment.csv
+        ↓
+【你】BERT 句对微调：[CLS] 句子 [SEP] 属性 [SEP]
+        ↓
+  POST /api/v1/aspect/predict（可与陈江平 BiLSTM 共用路径）
+        ↓
+      郑平高单条分析页的 aspects[]
 ```
 
-### HTTP（sentiment-ai · 与陈江平 BiLSTM 属性共用路径）
+---
 
-| 方法 | 路径 | 请求 `body` | 响应 `result` |
-| ---- | ---- | ----------- | ------------- |
-| POST | `/api/v1/aspect/predict` | `{ "text": str, "aspects": list[str] }` | `{ "items": [{ "aspect", "polarity", "polarity_text", "prob" }] }` |
+## 2. 你要完成的功能
 
-字段与郑平高 `AspectItem` 对齐：
+| # | 功能 | 做到什么算完 |
+| - | ---- | ------------ |
+| 1 | 属性情感微调 | Acc ≥ **90%** |
+| 2 | 一句多属性 | `predict_aspects(text, aspects[])` |
+| 3 | 接口交 1 号 | 字段对齐 `AspectItem` |
+| 4 | 路演 | 多属性面板截图 |
 
-| AI 返回 | schema 字段 | 类型 |
-| ------- | ----------- | ---- |
-| aspect | aspect | str |
-| polarity | polarity | int |
-| polarity_text | polarity_text | str |
-| prob | prob | float |
+---
 
-### 郑平高侧消费
+## 3. 和谁对接
 
-```python
-# sentiment_ai_client._real_analyze()
-aspect_raw = await _post_ai(client, "/api/v1/aspect/predict", {
-    "text": text,
-    "aspects": list(_ASPECT_HINTS),  # 质量,价格,物流,...
-})
-items = aspect_raw.get("items") or aspect_raw.get("aspects") or []
-```
+| 方向 | 找谁 | 干什么 |
+| ---- | ---- | ------ |
+| 上游要样本 | **5号** | `aspect_sentiment.csv`（`sentence,aspect,polarity`） |
+| 同数据对照 | **陈江平** | 同一份 CSV，方便比 BiLSTM vs BERT |
+| 下游交接口 | **郑平高** | `/api/v1/aspect/predict` |
+| 交路演图 | **6号** | 面板截图 |
 
-------------------------------------------------------------------------
+---
 
-# 四、产出文件
+## 4. 传入 → 技术处理 → 返回
 
-| 路径 | 说明 |
+| 阶段 | 内容 |
 | ---- | ---- |
-| `artifacts/aspect/bert_aspect_best/` | 权重 |
-| `artifacts/metrics/bert_aspect_metrics.json` | acc/f1 |
-| 多属性面板截图 | 交 6 号 / 1 号 |
+| **传入** | `text` + `aspects: ["质量","价格","物流",...]` |
+| **中间技术** | `bert-base-chinese`；句对编码；二分类（正/负） |
+| **返回** | `{items:[{aspect, polarity, polarity_text, prob}]}`，长度 = 属性个数 |
 
-------------------------------------------------------------------------
+| 字段 | 含义 |
+| ---- | ---- |
+| `aspect` | 属性名 |
+| `polarity` | 0/1 |
+| `polarity_text` | 正向/负向 |
+| `prob` | 概率 |
 
-# 五、对接
+---
 
-| 交谁 | 交什么 |
-| ---- | ------ |
-| **郑平高（1号）** | `predict_aspects()` 或 POST `/api/v1/aspect/predict` |
-| 陈江平 | 同一 `aspect_sentiment.csv` |
-| 6号 | 面板截图 |
+## 5. 怎么做（按顺序勾）
 
-------------------------------------------------------------------------
+1. 代码放：`pipelines/aspect_sentiment/bert/`  
+2. 编码：`[CLS] sentence [SEP] aspect [SEP]`  
+3. 训练到 Acc≥90%，权重 `artifacts/aspect/bert_aspect_best/`  
+4. 实现 `predict_aspects`，挂同一 HTTP 路径  
+5. 给郑平高 curl；确认 `items` 字段名  
+6. 路演截图
 
-# 六、交付自检
+---
 
-| 检查项 | 达标 |
-| ------ | ---- |
+## 6. 验收打勾
+
+| 检查 | ☐ |
+| ---- | - |
 | Acc≥90% | ☐ |
-| `predict_aspects(text, aspects[])` 返回 items 长度 = len(aspects) | ☐ |
-| 响应字段与 AspectItem 一致 | ☐ |
-| 权重/HTTP 交 1 号 | ☐ |
-| 路演面板截图已交 | ☐ |
+| 多属性返回条数 = 请求 aspects 长度 | ☐ |
+| 郑平高能接入单条分析 | ☐ |
+| 路演截图已交 | ☐ |

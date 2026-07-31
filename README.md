@@ -1,24 +1,35 @@
 # Sentiment-Plus
 
-商品评论情感分析系统。管理端基于 Jeecg FastAPI + Vue3；AI 能力独立为 `sentiment-ai`，按团队分工分包，通过 HTTP 与后端协作。
+商品评论情感分析系统。管理端基于 Jeecg FastAPI + Vue3；AI 能力分版本：
+
+| 版本 | 目录 | 能力 | 端口 |
+|------|------|------|------|
+| **1.0**（当前联调） | [`sentiment-ai/`](./sentiment-ai/)（链接 [`sentiment-ai-1.0/`](./sentiment-ai-1.0/)） | 好评/差评二分类 + 现有 pipelines | **8100** |
+| **2.0**（开发中） | [`sentiment-ai-2.0/`](./sentiment-ai-2.0/) | 多标签 → 动态标签（拼多多风格，待排期） | **8200** |
 
 设计与验收细节见：[商品评论情感分析项目设计2.md](./商品评论情感分析项目设计2.md)  
-按人可执行任务细化见：[任务细化/](./任务细化/)（入口：[00-总览与全局约定.md](./任务细化/00-总览与全局约定.md) · 函数契约：[01-函数接口对照表.md](./任务细化/01-函数接口对照表.md)）
+
+**组员开工请先打开**：[任务细化/00-总览与全局约定.md](./任务细化/00-总览与全局约定.md)（每人一份「手把手」说明：功能、对接人、传入/返回、技术步骤）· 联调字段速查：[01-函数接口对照表.md](./任务细化/01-函数接口对照表.md)
 
 ## 总体架构
 
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  jeecgboot-vue3 │────▶│   jeecg-fastapi  │────▶│  sentiment-ai   │
-│  前端（郑平高）  │     │  业务编排 / 鉴权  │     │  模型训练与推理  │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
+┌─────────────────┐     ┌──────────────────┐     ┌──────────────────────────┐
+│  jeecgboot-vue3 │────▶│   jeecg-fastapi  │────▶│  sentiment-ai 1.0 :8100  │
+│  前端（郑平高）  │     │  业务编排 / 鉴权  │     │  好评/差评（稳定）        │
+└─────────────────┘     └──────────────────┘     └──────────────────────────┘
+                                                      │ 后续可加
+                                                      ▼
+                                               sentiment-ai 2.0 :8200
+                                               多标签 / 动态标签
 ```
 
 | 路径 | 职责 | 主要负责人 |
 |------|------|------------|
 | `jeecgboot-vue3/` | 前端：系统管理、评论分析可视化（ECharts） | 郑平高（1号） |
 | `jeecg-fastapi/` | 后端：鉴权、业务 API，转发/聚合 AI 接口 | 郑平高（1号） |
-| `sentiment-ai/` | 数据、预处理、情感/关键词/属性模型与推理 | 见下表 |
+| `sentiment-ai/`（1.0） | 二分类情感 + 关键词/优缺点/属性等 | 见下表 |
+| `sentiment-ai-2.0/` | 多标签与动态标签（骨架） | 待排期 |
 | `商品评论情感分析项目设计2.md` | 分工、验收、路演素材规范 | 全组 |
 
 ## 功能模块 ↔ 人员 ↔ 目录
@@ -63,13 +74,14 @@ sentiment-plus/
 │   └── sql/
 ├── jeecgboot-vue3/                   # 前端（郑平高）
 │   └── src/
-├── sentiment-ai/                     # AI 模块（按分工分包）
+├── sentiment-ai/                     # AI 1.0：好评/差评（= sentiment-ai-1.0 链接）
+├── sentiment-ai-2.0/                 # AI 2.0：多标签 / 动态标签（骨架）
 ├── 商品评论情感分析项目设计2.md
 ├── README.md
 └── LICENSE
 ```
 
-## AI 模块目录（`sentiment-ai/`）
+## AI 1.0 目录（`sentiment-ai/`）
 
 ```
 sentiment-ai/
@@ -122,7 +134,7 @@ sentiment-ai/
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
-# 根目录 requirements.txt 已统一后端 + sentiment-ai（含 torch/transformers/KeyBERT 等）
+# 根目录 requirements.txt 已统一后端 + sentiment-ai 1.0/2.0（含 torch/transformers/KeyBERT 等）
 # GPU 可选：pip install torch --index-url https://download.pytorch.org/whl/cu118
 cd jeecg-fastapi
 copy .env.example .env
@@ -154,4 +166,4 @@ pnpm dev
 - 关键词对比 `/sentiment/keywords`（KeyBERT vs TF-IDF）
 - 系统管理 `/system/user` 等（用户 / 角色 / 菜单 / 部门 / 字典）
 
-> 业务后端默认 `SENTIMENT_AI_MOCK=true` 可演示；关闭 Mock 并启动 `sentiment-ai` 后转发真实推理。已有库需执行 `jeecg-fastapi/sql/patch_add_sentiment_menus.sql` 后重新登录。
+> 业务后端默认 `SENTIMENT_AI_MOCK=true` 可演示；关闭 Mock 并启动 **sentiment-ai 1.0（8100）** 后转发真实推理。2.0（8200）为骨架，暂不接入。已有库需执行 `jeecg-fastapi/sql/patch_add_sentiment_menus.sql` 后重新登录。

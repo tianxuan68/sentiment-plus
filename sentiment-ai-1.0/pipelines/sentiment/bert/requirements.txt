@@ -1,0 +1,3 @@
+# 已合并到仓库根目录统一依赖，请勿在此安装：
+#   pip install -r ../../../../requirements.txt
+# BERT 训练依赖（torch / transformers / datasets / accelerate 等）均已纳入根目录 requirements.txt。
