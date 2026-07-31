@@ -1,0 +1,15 @@
+# 英文情感数据划分（与中文分开，中英不混训）
+# 源数据经 prepare_data.py 清洗后得到 en_labeled.csv
+random_seed: 68
+train_ratio: 0.8
+val_ratio: 0.1
+test_ratio: 0.1
+source_csv: data/processed/en_labeled.csv
+output_dir: data/processed
+# 输出文件名（与中文 train_split.csv 区分）
+train_file: train_split_en.csv
+val_file: val_split_en.csv
+test_file: test_split_en.csv
+columns:
+  text: sentence
+  label: label

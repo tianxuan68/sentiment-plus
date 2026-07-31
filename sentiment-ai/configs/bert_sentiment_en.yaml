@@ -1,0 +1,24 @@
+# 英文 BERT 情感分类超参（与中文管线隔离）
+# 预训练请使用英文模型，例如本地 artifacts/pretrained/bert-base-uncased
+# 不要使用 bert-base-chinese
+model_name: artifacts/pretrained/bert-base-uncased
+num_labels: 2
+max_length: 128
+learning_rate: 2.0e-5
+batch_size: 16
+epochs: 3
+optimizer: AdamW
+weight_decay: 0.01
+warmup_ratio: 0.1
+random_seed: 68
+
+# 试跑改小；正式全量改为 null
+max_train_samples: 2000
+max_val_samples: 500
+
+processed_dir: data/processed
+train_file: train_split_en.csv
+val_file: val_split_en.csv
+test_file: test_split_en.csv
+output_dir: artifacts/bert_en
+metrics_file: artifacts/bert_en/metrics.json

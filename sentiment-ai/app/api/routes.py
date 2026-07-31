@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.schemas.predict import PredictRequest, PredictResponse
 from app.services.bert_sentiment import predict_sentiment
+from app.services.bert_sentiment_en import predict_sentiment_en
 
 router = APIRouter()
 
@@ -13,6 +14,13 @@ def health():
 
 @router.post("/api/sentiment/predict", response_model=PredictResponse)
 def sentiment_predict(body: PredictRequest):
-    """整句情感分类推理入口（交 1 号接入）。"""
+    """中文整句情感分类推理入口（交 1 号接入）。"""
     results = predict_sentiment(body.texts)
+    return PredictResponse(results=results)
+
+
+@router.post("/api/sentiment/predict_en", response_model=PredictResponse)
+def sentiment_predict_en(body: PredictRequest):
+    """英文整句情感分类推理入口。"""
+    results = predict_sentiment_en(body.texts)
     return PredictResponse(results=results)
