@@ -22,8 +22,8 @@ python scripts/build_aspect_annotate_pool.py
 # 2. 标注 + 导出 + 基线评估 + 路演图（默认跳过 BERT 训练）
 python pipelines/aspect_ner/run_pipeline.py --skip-train
 
-# 3. 可选：安装 ML 依赖后训练 BertForTokenClassification
-pip install -r requirements-ml.txt
+# 3. 可选：训练 BertForTokenClassification（依赖已并入仓库根目录 requirements.txt）
+# pip install -r ../requirements.txt
 python pipelines/aspect_ner/run_pipeline.py
 
 # 4. 单元测试

@@ -122,6 +122,8 @@ sentiment-ai/
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
+# 根目录 requirements.txt 已统一后端 + sentiment-ai（含 torch/transformers/KeyBERT 等）
+# GPU 可选：pip install torch --index-url https://download.pytorch.org/whl/cu118
 cd jeecg-fastapi
 copy .env.example .env
 ..\.venv\Scripts\python scripts/init_slim_db.py

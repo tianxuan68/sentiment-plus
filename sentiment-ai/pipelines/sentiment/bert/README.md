@@ -22,13 +22,14 @@
 ## 环境（有 GPU 的队友）
 
 ```powershell
-cd sentiment-ai
+# 在仓库根目录安装统一依赖
+cd ..   # → sentiment-plus/
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-pip install -r pipelines\sentiment\bert\requirements.txt
 # 若有 NVIDIA GPU，建议再装对应 CUDA 版 torch，例如：
 # pip install torch --index-url https://download.pytorch.org/whl/cu121
+cd sentiment-ai
 ```
 
 确认 GPU：

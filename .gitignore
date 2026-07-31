@@ -151,6 +151,8 @@ activemq-data/
 .env
 .envrc
 .venv
+.deps-check-venv/
+.deps-verify/
 env/
 venv/
 ENV/

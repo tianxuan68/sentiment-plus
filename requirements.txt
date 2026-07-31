@@ -1,3 +1,13 @@
+# =============================================================================
+# Sentiment-Plus 统一依赖（仓库根目录）
+# 覆盖：jeecg-fastapi 后端 + sentiment-ai 推理 / 训练 / KeyBERT / NER
+# Python：3.11+（本文件已在 3.12 上多次 pip 解析通过）
+# 安装：pip install -r requirements.txt
+# GPU 版 torch（可选，覆盖 CPU 轮子）：
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# =============================================================================
+
+# --- 后端 / FastAPI（jeecg-fastapi）---
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.13.0
@@ -43,7 +53,7 @@ uvicorn==0.49.0
 watchfiles==1.2.0
 websockets==16.0
 
-# 数据分析 / 可视化 / 传统 ML（兼容 Python 3.11）
+# --- 数据分析 / 可视化 / 传统 ML ---
 numpy==2.3.3
 pandas==3.0.5
 matplotlib==3.10.3
@@ -60,6 +70,20 @@ threadpoolctl==3.6.0
 tqdm==4.70.0
 wordcloud==1.9.6
 
-# 深度学习 / KeyBERT 等可选重依赖见：
-#   pip install -r sentiment-ai/requirements-ml.txt
-#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# --- 深度学习 / HuggingFace / KeyBERT ---
+# 合并自：
+#   sentiment-ai/requirements.txt
+#   sentiment-ai/requirements-ml.txt
+#   sentiment-ai/pipelines/sentiment/bert/requirements.txt
+# 版本为 pip 解析锁定值（datasets 不能用最新 5.x，与 transformers 5.14 / fsspec 不兼容）
+torch==2.13.0
+transformers==5.14.1
+accelerate==1.14.0
+datasets==4.0.0
+huggingface-hub==1.21.0
+fsspec==2025.3.0
+tokenizers==0.22.2
+safetensors==0.8.0
+sentence-transformers==5.6.1
+keybert==0.9.0
+seqeval==1.2.2
