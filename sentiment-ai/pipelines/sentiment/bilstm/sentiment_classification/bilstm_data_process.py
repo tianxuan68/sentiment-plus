@@ -18,10 +18,17 @@ config_obj = Config()
 # 1. 数据加载
 # ================================================================
 
-def load_chinese_data(path):
+def load_data(path):
     """加载中文数据"""
     df = pd.read_csv(path)
     texts = df['sentence'].astype(str).tolist()
+    labels = df['label'].astype(int).tolist()
+    return texts, labels
+
+def load_chinese_data(path):
+    """加载中文数据"""
+    df = pd.read_csv(path)
+    texts = df['text_cleaned'].astype(str).tolist()
     labels = df['label'].astype(int).tolist()
     return texts, labels
 
@@ -218,39 +225,56 @@ def main():
     print(f"处理数据集 (中文分词模式: {config_obj.zh_model})")
     print("=" * 50)
 
-    zh_texts, zh_labels = [], []
-    en_texts, en_labels = [], []
+    # zh_texts, zh_labels = [], []
+    # en_texts, en_labels = [], []
+    #
+    # if config_obj.chinese_data_path:
+    #     zh_texts, zh_labels = load_chinese_data(config_obj.chinese_data_path)
+    #     zh_texts, zh_labels = clean_texts(zh_texts, zh_labels)
+    #     print(f"中文数据: {len(zh_texts)} 条")
+    #
+    # if config_obj.english_data_path:
+    #     en_texts, en_labels = load_english_data(config_obj.english_data_path)
+    #     en_texts, en_labels = clean_texts(en_texts, en_labels)
+    #     print(f"英文数据: {len(en_texts)} 条")
+    #
+    # all_texts, all_labels = zh_texts + en_texts, zh_labels + en_labels
+    # print(f"总数据: {len(all_texts)} 条")
+    #
+    # if zh_texts and en_texts:
+    #     print("\n[中英文分别划分]")
+    #     train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = split_mixed_data(
+    #         zh_texts, zh_labels, en_texts, en_labels,
+    #         config_obj.train_data_percent, config_obj.test_data_percent, config_obj.test_data_percent
+    #     )
+    # else:
+    #     print("\n[整体划分]")
+    #     train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = split_data(
+    #         all_texts, all_labels,
+    #         config_obj.train_data_percent, config_obj.test_data_percent, config_obj.test_data_percent
+    #     )
 
-    if config_obj.chinese_data_path:
-        zh_texts, zh_labels = load_chinese_data(config_obj.chinese_data_path)
-        zh_texts, zh_labels = clean_texts(zh_texts, zh_labels)
-        print(f"中文数据: {len(zh_texts)} 条")
-
-    if config_obj.english_data_path:
-        en_texts, en_labels = load_english_data(config_obj.english_data_path)
-        en_texts, en_labels = clean_texts(en_texts, en_labels)
-        print(f"英文数据: {len(en_texts)} 条")
-
-    all_texts, all_labels = zh_texts + en_texts, zh_labels + en_labels
-    print(f"总数据: {len(all_texts)} 条")
-
-    if zh_texts and en_texts:
-        print("\n[中英文分别划分]")
-        train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = split_mixed_data(
-            zh_texts, zh_labels, en_texts, en_labels,
-            config_obj.train_data_percent, config_obj.test_data_percent, config_obj.test_data_percent
-        )
-    else:
-        print("\n[整体划分]")
-        train_texts, train_labels, val_texts, val_labels, test_texts, test_labels = split_data(
-            all_texts, all_labels,
-            config_obj.train_data_percent, config_obj.test_data_percent, config_obj.test_data_percent
-        )
+    zh_texts, zh_labels = load_chinese_data(config_obj.data_zh_path)
+    zh_texts, zh_labels = clean_texts(zh_texts, zh_labels)
+    train_zh_texts, train_zh_labels, val_zh_texts, val_zh_labels, test_zh_texts, test_zh_labels = split_data(
+                zh_texts, zh_labels,
+                config_obj.train_data_percent, config_obj.test_data_percent, config_obj.test_data_percent
+            )
+    train_en_texts, train_en_labels = load_data(config_obj.train_en_path)
+    val_en_texts, val_en_labels = load_data(config_obj.val_en_path)
+    test_en_texts, test_en_labels = load_data(config_obj.test_en_path)
 
     print("\n[分词处理]")
-    train_texts = tokenize_data(train_texts, config_obj.zh_model)
-    val_texts = tokenize_data(val_texts, config_obj.zh_model)
-    test_texts = tokenize_data(test_texts, config_obj.zh_model)
+    train_en_texts = tokenize_data(train_en_texts, config_obj.zh_model)
+    val_en_texts = tokenize_data(val_en_texts, config_obj.zh_model)
+    test_en_texts = tokenize_data(test_en_texts, config_obj.zh_model)
+
+    train_texts = train_zh_texts + train_en_texts
+    train_labels = train_zh_labels + train_en_labels
+    val_texts = val_zh_texts + val_en_texts
+    val_labels = val_zh_labels + val_en_labels
+    test_texts = test_zh_texts + test_en_texts
+    test_labels = test_zh_labels + test_en_labels
 
     print("\n[保存数据]")
     save_dataset(train_texts, train_labels, val_texts, val_labels, test_texts, test_labels, config_obj.data_process_path)

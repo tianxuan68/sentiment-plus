@@ -14,8 +14,10 @@ import torch
 class Config:
     def __init__(self):
         # 数据集路径（中英文）
-        self.chinese_data_path = 'data/train.csv'
-        self.english_data_path = 'data/data.csv'
+        self.train_en_path = './data/train_split_en.csv'
+        self.test_en_path = './data/test_split_en.csv'
+        self.val_en_path = './data/val_split_en.csv'
+        self.data_zh_path = 'data/clean_train.csv'
 
         # 训练集、测试集、验证集比例为 8:1:1
         self.train_data_percent = 0.8
@@ -41,14 +43,14 @@ class Config:
         self.save_best_param_path = './best_param'
 
         # ========== 数据 ==========
-        self.max_len = 30  # 最大序列长度
+        self.max_len = 150  # 最大序列长度
         self.batch_size = 16  # 批次大小
         self.num_workers = 0  # Windows设为0
         self.random_seed = 68  # 随机种子
-        self.min_freq = 2  # 最低词频
+        self.min_freq = 3  # 最低词频
 
         # ========== 模型 ==========
-        self.vocab_size = 10000  # 词表大小
+        self.vocab_size = 200000  # 词表大小
         self.embed_dim = 32  # 词向量维度
         self.hidden_dim = 32  # LSTM隐藏层
         self.num_classes = 2  # 正向/负向

@@ -1,8 +1,8 @@
 {
     "embed_dim": 128,
-    "hidden_dim": 128,
-    "num_layers": 2,
-    "dropout": 0.42331459338334965,
-    "learning_rate": 0.0002563429613502348,
+    "hidden_dim": 256,
+    "num_layers": 1,
+    "dropout": 0.3623603583506275,
+    "learning_rate": 0.0020507289931591148,
     "batch_size": 64
 }

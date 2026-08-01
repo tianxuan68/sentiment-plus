@@ -35,14 +35,14 @@ def load_tokenized_data(data_dir="./processed_data"):
 # 2. 词表管理
 # ================================================================
 
-def build_vocab(texts, max_vocab=50000):
+def build_vocab(texts, max_vocab=50000, min_freq = config_obj.min_freq):
     """从文本列表构建词表"""
     vocab = SPECIAL_TOKENS.copy()
     counter = Counter()
     for text in texts:
         counter.update(text.split())
     for word, freq in counter.most_common(max_vocab - len(SPECIAL_TOKENS)):
-        if word not in vocab:
+        if freq >= min_freq and word not in vocab:
             vocab[word] = len(vocab)
     return vocab
 
@@ -58,7 +58,7 @@ def load_vocab(path):
         return json.load(f)
 
 
-def update_vocab(vocab, texts, path, max_vocab=50000):
+def update_vocab(vocab, texts, path, max_vocab=50000, min_freq= config_obj.min_freq):
     """更新词表，新词追加到后面"""
     counter = Counter()
     for text in texts:
@@ -66,7 +66,7 @@ def update_vocab(vocab, texts, path, max_vocab=50000):
 
     new_words = []
     for word, freq in counter.most_common():
-        if word not in vocab and word not in SPECIAL_TOKENS:
+        if freq >= min_freq and word not in vocab and word not in SPECIAL_TOKENS:
             new_words.append(word)
 
     if not new_words:
@@ -89,14 +89,14 @@ def get_vocab(texts, path, max_vocab=50000, is_create=False):
     # is_create 表示是否构建 True重新构建  False加载并更新
     if is_create:
         print("📝 构建新词表...")
-        vocab = build_vocab(texts, max_vocab)
+        vocab = build_vocab(texts, max_vocab, config_obj.min_freq)
         save_vocab(vocab, path)
         return vocab
     else:
         """获取词表：存在则加载并更新，不存在则构建"""
         if not os.path.exists(path):
             print("📝 构建新词表...")
-            vocab = build_vocab(texts, max_vocab)
+            vocab = build_vocab(texts, max_vocab,config_obj.min_freq)
             save_vocab(vocab, path)
             return vocab
 
@@ -105,7 +105,7 @@ def get_vocab(texts, path, max_vocab=50000, is_create=False):
         print(f"   当前词表大小: {len(vocab)}")
 
         print("🔄 检测新词...")
-        vocab, added = update_vocab(vocab, texts, path, max_vocab)
+        vocab, added = update_vocab(vocab, texts, path, max_vocab, config_obj.min_freq)
         if added == 0:
             print("   无新词，词表无需更新")
 
@@ -129,7 +129,7 @@ def main():
     vocab = get_vocab(
         train_texts,
         config_obj.save_vocab_path + "/vocab.json",
-        max_vocab=config_obj.vocab_size, is_create=False
+        max_vocab=config_obj.vocab_size, is_create=True
     )
 
     print(f"\n✅ 词表构建完成，大小: {len(vocab)}")

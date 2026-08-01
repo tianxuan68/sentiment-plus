@@ -73,7 +73,7 @@ def predict(input_data):
     model.eval()
 
     # 3. 模型预测
-    input_text = input_data['text']
+    input_text = [input_data['text']]
     input_new_text = tokenize_data(input_text, config.zh_model)
     ids, seq_len = text_to_ids(" ".join(input_new_text), vocab, config.max_len)
     with torch.no_grad():
@@ -91,6 +91,25 @@ def predict(input_data):
 
 
 if __name__ == '__main__':
-    input_data = {'text': '这家餐厅的菜太好吃了，服务也很棒，强烈推荐！'}
-    result = predict(input_data)
-    print(result)
+    test_cases = [
+        "从下单到收货，用了整整 7 天。",
+        "收到货了，但盒子是破的。",
+        "这个价格买了三个，值吗？",
+        "这是我这辈子买过最差的手机了。",
+        "Oh, great! 这包装真精美，就是这质量太 terrible 了。",
+        "Very nice！结果用了一天就坏了。",
+        "这质量确实无敌了，佩服佩服。",
+        "Good luck with this product.",
+        "好！",
+        "退！",
+        "还行吧。",
+        "有点贵。",
+        "Very bad product.",
+        "This is great!",
+        "I hate this item.",
+        "Not worth the money."
+    ]
+    for text in test_cases:
+        input_data = {'text': text}
+        result = predict(input_data)
+        print(result)

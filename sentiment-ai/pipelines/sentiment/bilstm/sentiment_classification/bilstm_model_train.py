@@ -25,7 +25,7 @@ from sklearn.metrics import accuracy_score, f1_score
 from tqdm import tqdm
 from bilstm_config import Config
 from bilstm_model import BiLSTM_MultiHead
-from bilstm_data_build_batch import build_batch_data
+from bilstm_data_build_batch import build_batch_data, create_dataloader, load_data_and_vocab
 
 # 实例化配置文件
 config = Config()
@@ -37,7 +37,7 @@ def train_epoch(model, dataloader, optimizer, criterion, device):
     model.train()
     total_loss = 0
     all_preds, all_labels = [], []
-    for batch in tqdm(dataloader, desc="训练"):
+    for batch in tqdm(dataloader, desc="训练", position=0, leave=False):
         input_ids = batch['input_ids'].to(device)
         labels = batch['label'].to(device)
         logits, _ = model(input_ids)
@@ -57,7 +57,7 @@ def evaluate(model, dataloader, criterion, device):
     total_loss = 0
     all_preds, all_labels = [], []
     with torch.no_grad():
-        for batch in tqdm(dataloader, desc="评估"):
+        for batch in tqdm(dataloader, desc="评估", position=0, leave=False):
             input_ids = batch['input_ids'].to(device)
             labels = batch['label'].to(device)
             logits, _ = model(input_ids)
@@ -199,24 +199,56 @@ def objective(trial):
 # 【新增】最终带最优参数完整训练与保存
 # ================================================================
 def final_run(best_params):
-    print("\n🏆 开始使用最优超参数进行完整训练...")
+    print("\n🏆 开始使用最优超参数进行完整训练（train+val 合并训练）...")
+
     device = config.device
 
-    # 注入最佳参数
+    # 2. 注入最佳参数
     for k, v in best_params.items():
         setattr(config, k, v)
     print(f"最终参数: {best_params}")
 
-    # 加载数据
-    train_loader, val_loader, test_loader, vocab = build_batch_data(
-        data_dir=config.data_process_path,
-        vocab_path=config.save_vocab_path + "/vocab.json",
-        max_vocab=config.vocab_size,
-        max_len=config.max_len,
-        batch_size=config.batch_size
+    # ================================================================
+    # 3. 加载原始数据（不经过 build_batch_data）
+    # ================================================================
+    train_texts, train_labels, val_texts, val_labels, test_texts, test_labels, vocab = load_data_and_vocab(
+        config.data_process_path,
+        config.save_vocab_path + "/vocab.json"
     )
 
-    # 创建最终模型
+    # ================================================================
+    # 4. 合并训练集和验证集
+    # ================================================================
+    all_train_texts = train_texts + val_texts
+    all_train_labels = train_labels + val_labels
+    print(f"✅ 合并后训练集大小: {len(all_train_texts)} 条")
+    print(f"✅ 测试集大小: {len(test_texts)} 条")
+
+    # ================================================================
+    # 5. 创建 DataLoader
+    # ================================================================
+    final_train_loader = create_dataloader(
+        all_train_texts,
+        all_train_labels,
+        vocab,
+        batch_size=config.batch_size,
+        shuffle=True,
+        max_len=config.max_len,
+        seed=config.random_seed  # 传入种子确保打乱顺序一致
+    )
+    test_loader = create_dataloader(
+        test_texts,
+        test_labels,
+        vocab,
+        batch_size=config.batch_size,
+        shuffle=False,
+        max_len=config.max_len,
+        seed=config.random_seed
+    )
+
+    # ================================================================
+    # 6. 创建最终模型
+    # ================================================================
     model = BiLSTM_MultiHead(
         vocab_size=len(vocab),
         embed_dim=config.embed_dim,
@@ -231,41 +263,37 @@ def final_run(best_params):
 
     optimizer = AdamW(model.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay)
     criterion = nn.CrossEntropyLoss()
-    scheduler = ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=3, min_lr=1e-7)
 
-    best_val_f1 = 0.0
-    best_test_f1 = 0.0
-    best_test_acc = 0.0
+    # ================================================================
+    # 7. 训练循环（监控训练 Loss 进行早停）
+    # ================================================================
+    best_loss = float('inf')
     best_model_state = None
     patience_counter = 0
 
     for epoch in range(1, config.ecope + 1):
-        train_loss, train_acc, train_f1 = train_epoch(model, train_loader, optimizer, criterion, device)
-        val_loss, val_acc, val_f1 = evaluate(model, val_loader, criterion, device)
-        test_loss, test_acc, test_f1 = evaluate(model, test_loader, criterion, device)
+        train_loss, train_acc, train_f1 = train_epoch(model, final_train_loader, optimizer, criterion, device)
+        print(f"Epoch {epoch} | Train Loss: {train_loss:.4f} | Acc: {train_acc:.4f} | F1: {train_f1:.4f}")
 
-        print(f"Epoch {epoch} | Train: {train_f1:.4f} | Val: {val_f1:.4f} | Test: {test_f1:.4f}")
-
-        if val_f1 > best_val_f1:
-            best_val_f1 = val_f1
-            best_test_f1 = test_f1
-            best_test_acc = test_acc
-            patience_counter = 0
+        if train_loss < best_loss:
+            best_loss = train_loss
             best_model_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
+            patience_counter = 0
         else:
             patience_counter += 1
             if patience_counter >= config.patience:
+                print(f"⏹️ 训练集 Loss 连续 {patience_counter} 轮未下降，早停触发。")
                 break
 
-        scheduler.step(val_f1)
-
-    # 加载最优模型并执行完整的保存流程
+    # ================================================================
+    # 8. 加载最优模型，在测试集上评估
+    # ================================================================
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
 
-    print("\n=== 最终测试 ===")
+    print("\n=== 最终测试集评估 ===")
     _, final_test_acc, final_test_f1 = evaluate(model, test_loader, criterion, device)
-    print(f"测试集: Acc={final_test_acc:.4f}, F1={final_test_f1:.4f}")
+    print(f"测试集 Acc: {final_test_acc:.4f}, F1: {final_test_f1:.4f}")
 
     # --- 保存逻辑（与原代码一致）---
     # 1. 保存权重
@@ -293,11 +321,11 @@ def final_run(best_params):
     compare_data = {
         "baseline": {"f1": baseline_f1},
         "cnn": {"f1": cnn_metrics['f1']},
-        "bilstm": {"f1": best_val_f1, "test_f1": final_test_f1, "test_acc": final_test_acc},
+        "bilstm": {"f1": final_test_f1, "test_f1": final_test_f1, "test_acc": final_test_acc},
         "improvement": {
-            "f1_gain": best_val_f1 - cnn_metrics['f1'],
-            "f1_gain_percent": ((best_val_f1 - cnn_metrics['f1']) / cnn_metrics['f1']) * 100,
-            "meets_2_percent": (best_val_f1 - cnn_metrics['f1']) >= 0.02
+            "f1_gain": final_test_f1 - cnn_metrics['f1'],
+            "f1_gain_percent": ((final_test_f1 - cnn_metrics['f1']) / cnn_metrics['f1']) * 100,
+            "meets_2_percent": (final_test_f1 - cnn_metrics['f1']) >= 0.02
         }
     }
 
@@ -312,7 +340,7 @@ def final_run(best_params):
     roadshow_dir = config.roadshow_data_path
     os.makedirs(roadshow_dir, exist_ok=True)
     plot_path = os.path.join(roadshow_dir, 'baseline_cnn_bilstm.png')
-    plot_compare(baseline_f1, cnn_metrics['f1'], best_val_f1, plot_path)
+    plot_compare(baseline_f1, cnn_metrics['f1'], final_test_f1, plot_path)
 
 
 def save_best_params_to_json(best_params, save_path):

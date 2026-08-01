@@ -1,11 +1,11 @@
 {
-  "train_size": 75984,
-  "val_size": 9499,
-  "test_size": 9499,
-  "train_positive": 48714,
-  "train_negative": 27270,
-  "val_positive": 6174,
-  "val_negative": 3325,
-  "test_positive": 6100,
-  "test_negative": 3399
+  "train_size": 162408,
+  "val_size": 20301,
+  "test_size": 20301,
+  "train_positive": 102861,
+  "train_negative": 59547,
+  "val_positive": 12916,
+  "val_negative": 7385,
+  "test_positive": 12839,
+  "test_negative": 7462
 }

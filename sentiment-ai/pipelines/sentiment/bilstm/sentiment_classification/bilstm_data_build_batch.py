@@ -5,6 +5,7 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 from bilstm_config import Config
+import os
 
 
 config_obj = Config()
@@ -85,11 +86,21 @@ class SentimentDataset(Dataset):
 # 4. 创建DataLoader（供训练使用）
 # ================================================================
 
-def create_dataloader(texts, labels, vocab, batch_size=16, shuffle=True, max_len=30, num_workers=0):
+# bilstm_data_build_batch.py
+
+def create_dataloader(texts, labels, vocab, batch_size=16, shuffle=True, max_len=30, num_workers=0, seed=68):  # 改为 0
     """创建DataLoader，生成批次数据"""
     dataset = SentimentDataset(texts, labels, vocab, max_len)
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle,
-                      num_workers=num_workers, drop_last=False)
+    g = torch.Generator()
+    g.manual_seed(seed)
+    return DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=0,   # 在这里强制写死 0
+        drop_last=False,
+        generator=g
+    )
 
 
 # ================================================================
@@ -119,9 +130,9 @@ def build_batch_data(data_dir=config_obj.data_process_path,
 
     # 2. 创建DataLoader
     print("\n[2] 创建DataLoader...")
-    train_loader = create_dataloader(train_texts, train_labels, vocab, batch_size, True, max_len)
-    val_loader = create_dataloader(val_texts, val_labels, vocab, batch_size, False, max_len)
-    test_loader = create_dataloader(test_texts, test_labels, vocab, batch_size, False, max_len)
+    train_loader = create_dataloader(train_texts, train_labels, vocab, batch_size, True, max_len, config_obj.random_seed)
+    val_loader = create_dataloader(val_texts, val_labels, vocab, batch_size, False, max_len, config_obj.random_seed)
+    test_loader = create_dataloader(test_texts, test_labels, vocab, batch_size, False, max_len, config_obj.random_seed)
 
     print(f"\n✅ 批次数据创建完成:")
     print(f"   训练批次: {len(train_loader)}")
